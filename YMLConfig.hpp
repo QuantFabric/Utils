@@ -166,28 +166,28 @@ static void CalculateTick(const MarketCenterConfig& config, MarketData::StockInd
         return;
     }
     int call_auction_time_sec = (hour * 3600 + minute * 60 + second) * 1000;
-    int first_section_last = (config.IntContinuousAuctionPeriod[0].second - config.IntContinuousAuctionPeriod[0].first) / 500 + 1;
+    int first_section_last_tick = (config.IntContinuousAuctionPeriod[0].second - config.IntContinuousAuctionPeriod[0].first) / 500;
     if(int_time_sec == call_auction_time_sec)
     {
         data.Tick = 0;
         data.SectionFirstTick = 0;
-        data.SectionLastTick = first_section_last;
+        data.SectionLastTick = first_section_last_tick;
         return;
     }
     // first section
-    if (int_time >= config.IntContinuousAuctionPeriod[0].first && int_time <= config.IntContinuousAuctionPeriod[0].second)
+    if (int_time >= config.IntContinuousAuctionPeriod[0].first && int_time < config.IntContinuousAuctionPeriod[0].second)
     {
         data.Tick = (int_time - config.IntContinuousAuctionPeriod[0].first) / 500 + 1;
         data.SectionFirstTick = 0;
-        data.SectionLastTick = first_section_last;
+        data.SectionLastTick = first_section_last_tick;
         return;
     }
     // second section
-    if (int_time >= config.IntContinuousAuctionPeriod[1].first && int_time <= config.IntContinuousAuctionPeriod[1].second)
+    if (int_time >= config.IntContinuousAuctionPeriod[1].first && int_time < config.IntContinuousAuctionPeriod[1].second)
     {
-        data.Tick = first_section_last + 1 + (int_time - config.IntContinuousAuctionPeriod[1].first) / 500;
-        data.SectionFirstTick = first_section_last + 1;
-        data.SectionLastTick = first_section_last + 1 + (config.IntContinuousAuctionPeriod[1].second - config.IntContinuousAuctionPeriod[1].first) / 500;
+        data.Tick = first_section_last_tick + (int_time - config.IntContinuousAuctionPeriod[1].first) / 500 + 1;
+        data.SectionFirstTick = first_section_last_tick + 1;
+        data.SectionLastTick = first_section_last_tick + (config.IntContinuousAuctionPeriod[1].second - config.IntContinuousAuctionPeriod[1].first) / 500 + 1;
         return;
     }
     data.Tick = -1;

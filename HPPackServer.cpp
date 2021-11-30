@@ -101,6 +101,7 @@ En_HP_HandleResult __stdcall HPPackServer::OnAccept(HP_Server pSender, HP_CONNID
     if (m_sConnections.end() == it)
     {
         m_sConnections.insert(std::pair<HP_CONNID, Connection>(dwConnID, connection));
+        m_newConnections.insert(std::pair<HP_CONNID, Connection>(dwConnID, connection));
     }
     mtx.unlock();
     char errorString[512] = {0};
