@@ -195,7 +195,9 @@ static void CalculateTick(const MarketCenterConfig& config, MarketData::StockInd
 
 struct XTraderConfig
 {
+    string ExchangeID;
     string Product;
+    string Broker;
     string BrokerID;
     string Account;
     string Password;
@@ -215,6 +217,8 @@ struct XTraderConfig
     int RiskServerPort;
     string TraderAPI;
     string TraderAPIConfig;
+    unsigned int OrderChannelKey;
+    unsigned int ReportChannelKey;
 };
 
 static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
@@ -225,7 +229,9 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         out.clear();
         YAML::Node config = YAML::LoadFile(yml);
         YAML::Node sourceConfig = config["XTraderConfig"];
+        ret.ExchangeID = sourceConfig["ExchangeID"].as<string>();
         ret.Product = sourceConfig["Product"].as<string>();
+        ret.Broker = sourceConfig["Broker"].as<string>();
         ret.BrokerID = sourceConfig["BrokerID"].as<string>();
         ret.Account = sourceConfig["Account"].as<string>();
         ret.Password = sourceConfig["Password"].as<string>();
@@ -245,6 +251,8 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.RiskServerPort = sourceConfig["RiskServerPort"].as<int>();
         ret.TraderAPI = sourceConfig["TraderAPI"].as<string>();
         ret.TraderAPIConfig = sourceConfig["TraderAPIConfig"].as<string>();
+        ret.OrderChannelKey = sourceConfig["OrderChannelKey"].as<unsigned int>();
+        ret.ReportChannelKey = sourceConfig["ReportChannelKey"].as<unsigned int>();
     }
     catch(YAML::Exception& e)
     {
@@ -275,7 +283,7 @@ static bool LoadREMConfig(const char *yml, REMConfig& ret, string& out)
     {
         out.clear();
         YAML::Node config = YAML::LoadFile(yml);
-        YAML::Node sourceConfig = config["REMTradeConfig"];
+        YAML::Node sourceConfig = config["REMConfig"];
         ret.TradeServerIP = sourceConfig["TradeServerIP"].as<string>();
         ret.TradeServerPort = sourceConfig["TradeServerPort"].as<int>();
         ret.TradeServerUDPPort = sourceConfig["TradeServerUDPPort"].as<int>();
@@ -385,6 +393,7 @@ struct XServerConfig
     string FutureBinPath;
     string StockBinPath;
     string UserDBPath;
+    string AppCheckTime;
 };
 
 static bool LoadXServerConfig(const char *yml, XServerConfig& ret, string& out)
@@ -404,6 +413,7 @@ static bool LoadXServerConfig(const char *yml, XServerConfig& ret, string& out)
         ret.FutureBinPath = sourceConfig["FutureBinPath"].as<string>();
         ret.StockBinPath = sourceConfig["StockBinPath"].as<string>();
         ret.UserDBPath = sourceConfig["UserDBPath"].as<string>();
+        ret.AppCheckTime = sourceConfig["AppCheckTime"].as<string>();
     }
     catch(YAML::Exception& e)
     {

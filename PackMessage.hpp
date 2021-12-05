@@ -116,9 +116,12 @@ struct TOrderRequest
     uint8_t Offset;
     uint8_t RiskStatus;
     int OrderToken;
+    int UserReserved1;
+    int UserReserved2;
     double Price;
     int Volume;
     int EngineID;
+    char RecvMarketTime[32];
     char SendTime[32];
     char UpdateTime[32];
     int ErrorID;
@@ -131,7 +134,6 @@ struct TActionRequest
     char Colo[16];
     char Account[16];
     char OrderRef[32];
-    int EngineID;
     uint8_t RiskStatus;
     char UpdateTime[32];
     int ErrorID;
@@ -221,6 +223,7 @@ struct TOrderStatus
     unsigned int TradedVolume;
     double TradedPrice;
     unsigned int CanceledVolume;
+    char RecvMarketTime[32];
     char SendTime[32];
     char InsertTime[32];
     char BrokerACKTime[32];

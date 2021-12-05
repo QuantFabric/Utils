@@ -60,9 +60,13 @@ protected:
         T Queue[N];
     }TChannel;
 public:
+    IPCLockFreeQueue()
+    {
+
+    }
     // key:共享内存key
     // channelCount: 通道数量，即支持账户数量
-    IPCLockFreeQueue(unsigned int key = 0XFF000001, unsigned int channelCount = 20)
+    void Init(unsigned int key = 0XFF000001, unsigned int channelCount = 20)
     {
         m_IPCKey = key;
         m_ChannelSize = N;
@@ -94,7 +98,7 @@ public:
         return m_ChannelIndex;
     }
 
-    inline void Init()
+    inline void Reset()
     {
         memset(m_Buffer, 0, sizeof(TChannel) * m_ChannelCount);
     }
