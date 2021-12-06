@@ -540,6 +540,45 @@ static bool LoadYDError(const char *yml, unordered_map<int, string>& ret, string
     return ok;
 }
 
+struct OrderParameter
+{
+    string Account;
+    string Ticker;
+    int OrderType;
+    int Direction;
+    int Offset;
+    double Price;
+    int Volume;
+    int TimeOut;
+    int Count;
+};
+
+static bool LoadOrderParameter(const char *yml, OrderParameter& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        YAML::Node Config = YAML::LoadFile(yml);
+        YAML::Node sourceConfig = Config["OrderParameter"];
+        ret.Account = sourceConfig["Account"].as<string>();
+        ret.Ticker = sourceConfig["Ticker"].as<string>();
+        ret.OrderType = sourceConfig["OrderType"].as<int>();
+        ret.Direction = sourceConfig["Direction"].as<int>();
+        ret.Offset = sourceConfig["Offset"].as<int>();
+        ret.Price = sourceConfig["Price"].as<double>();
+        ret.Volume = sourceConfig["Volume"].as<int>();
+        ret.TimeOut = sourceConfig["TimeOut"].as<int>();
+        ret.Count = sourceConfig["Count"].as<int>();
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
 }
 
 #endif // YMLCONFIG_HPP
