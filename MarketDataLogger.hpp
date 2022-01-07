@@ -999,8 +999,19 @@ public:
 
     void Init()
     {
+        std::string data_log_path;
+        std::string log_name;
+        char* p = getenv("DATA_LOG_PATH");
+        if(p != NULL)
+        {
+            data_log_path = p;
+            log_name = data_log_path + "/market_data.csv";
+        }
+        else
+        {
+            log_name = "./market_data.csv";
+        }
         spdlog::init_thread_pool(1024 * 10, 2);
-        std::string log_name = "./market_data.csv";
         auto tmp_sink = std::make_shared<spdlog::sinks::daily_file_sink_st>(log_name, 18, 30);
         tmp_sink->set_pattern("%v");
         m_MarketDataLogger = std::make_shared<spdlog::async_logger>("global", tmp_sink, spdlog::thread_pool(), spdlog::async_overflow_policy::overrun_oldest);

@@ -540,6 +540,31 @@ static bool LoadYDError(const char *yml, unordered_map<int, string>& ret, string
     return ok;
 }
 
+static bool LoadOESError(const char *yml, unordered_map<int, string>& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        ret.clear();
+        YAML::Node Config = YAML::LoadFile(yml);
+        YAML::Node errorConfig = Config["OESError"];
+        for (int i = 0; i < errorConfig.size(); ++i)
+        {
+            YAML::Node error = errorConfig[i];
+            int code = error["Code"].as<int>();
+            std::string des = error["Error"].as<string>();
+            ret[code] = des;
+        }
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
 struct OrderParameter
 {
     string Account;
