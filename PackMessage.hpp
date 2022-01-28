@@ -13,6 +13,8 @@ namespace Message
 #define PLUGIN_RISKJUDGE        "RiskJudge"
 #define PLUGIN_PERMISSION       "Permission"
 
+#define PLUGIN_LIST             "Market|OrderManager|EventLog|Monitor|RiskJudge|Permission"
+
 struct TTest
 {
    char Account[16];
@@ -44,7 +46,7 @@ struct TLoginRequest
     char PassWord[16];
     char Operation[16];
     char Role[16];
-    char Plugins[256];
+    char Plugins[400];
     char UUID[32];
 };
 
@@ -63,10 +65,17 @@ struct TLoginResponse
     char Account[16];
     char PassWord[16];
     char Role[16];
-    char Plugins[256];
+    char Plugins[400];
     char UpdateTime[32];
     int ErrorID;
     char ErrorMsg[64];
+};
+
+enum EBusinessType
+{
+    ESTOCK = 1,
+    ECREDIT = 2,
+    EFUTURE = 3
 };
 
 enum EOrderType
@@ -96,7 +105,8 @@ enum ERiskStatusType
     EPrepareChecked = 1, // 等待检查
     ECheckedPass = 2, // 风控检查通过
     ECheckedNoPass = 3, // 风控检查不通过
-    ENoChecked = 4 // 不进行风控检查
+    ENoChecked = 4, // 不进行风控检查
+    EInitChecked = 5, // 初始化检查
 };
 
 enum EEngineType
@@ -115,6 +125,7 @@ struct TOrderRequest
     uint8_t Direction;
     uint8_t Offset;
     uint8_t RiskStatus;
+    uint8_t BussinessType;
     int OrderToken;
     int EngineID;
     int UserReserved1;
@@ -125,7 +136,7 @@ struct TOrderRequest
     char SendTime[32];
     char UpdateTime[32];
     int ErrorID;
-    char ErrorMsg[128];
+    char ErrorMsg[256];
     char RiskID[16];
 };
 
@@ -138,7 +149,7 @@ struct TActionRequest
     uint8_t RiskStatus;
     char UpdateTime[32];
     int ErrorID;
-    char ErrorMsg[128];
+    char ErrorMsg[256];
     char RiskID[16];
 };
 
@@ -156,7 +167,8 @@ enum EOrderStatus
     EExchangeError = 10,
     EActionError = 11,
     ERiskRejected = 12,
-    ERiskCancelRejected = 13
+    ERiskCancelRejected = 13,
+    ERiskCheckInit = 14,
 };
 
 enum EOrderSide
@@ -185,7 +197,14 @@ struct TCommand
     uint8_t CmdType;
     char Colo[16];
     char Account[16];
-    char Command[256];
+    char Command[512];
+};
+
+enum EEventLogLevel
+{
+    EInfo = 1,
+    EWarning = 2,
+    EError = 3
 };
 
 struct TEventLog
@@ -196,7 +215,8 @@ struct TEventLog
     char Account[16];
     char Ticker[16];
     char App[32];
-    char Event[128];
+    char Event[400];
+    int Level;
     char UpdateTime[32];
 };
 
@@ -218,6 +238,7 @@ struct TOrderStatus
     uint8_t OrderType;
     uint8_t OrderSide;
     uint8_t OrderStatus;
+    uint8_t BussinessType;
     double SendPrice;
     unsigned int SendVolume;
     unsigned int TotalTradedVolume;
@@ -233,7 +254,7 @@ struct TOrderStatus
     char ExchangeACKTime[32];
     char UpdateTime[32];
     int ErrorID;
-    char ErrorMsg[128];
+    char ErrorMsg[256];
     char RiskID[16];
 };
 
@@ -243,6 +264,7 @@ struct TAccountFund
     char Broker[16];
     char Product[16];
     char Account[16];
+    uint8_t BussinessType;
     double Deposit; // 入金
     double Withdraw; // 出金
     double CurrMargin; // 当前保证金
@@ -295,6 +317,7 @@ struct TAccountPosition
     char Product[16];
     char Account[16];
     char Ticker[16];
+    uint8_t BussinessType;
     char ExchangeID[16];
     union
     {
@@ -323,14 +346,8 @@ enum ERiskRejectedType
 enum ERiskLockedSide
 {
     EUNLOCK = 0,
-    ELOCK_OPEN_LONG = 1,
-    ELOCK_CLOSE_TD_LONG = 1 << 1,
-    ELOCK_CLOSE_YD_LONG = 1 << 2,
-    ELOCK_OPEN_SHORT = 1 << 3,
-    ELOCK_CLOSE_TD_SHORT = 1 << 4,
-    ELOCK_CLOSE_YD_SHORT = 1 << 5,
-    ELOCK_BUY = ELOCK_OPEN_LONG | ELOCK_CLOSE_TD_SHORT | ELOCK_CLOSE_YD_SHORT,
-    ELOCK_SELL = ELOCK_CLOSE_TD_LONG | ELOCK_CLOSE_YD_LONG | ELOCK_OPEN_SHORT,
+    ELOCK_BUY = 1,
+    ELOCK_SELL = 1 << 1,
     ELOCK_ACCOUNT = ELOCK_BUY | ELOCK_SELL,
 };
 
@@ -352,6 +369,7 @@ struct TRiskReport
     char Account[16];
     char Ticker[16];
     char RiskID[16];
+    uint8_t BussinessType;
     //  RiskLimitTable
     int FlowLimit;
     int TickerCancelLimit;
@@ -359,11 +377,10 @@ struct TRiskReport
     // LockedAccountTable
     int LockedSide;
     // CancelledCountTable
-    char EntityID[16];
     int CancelledCount;
     int UpperLimit;
     // common
-    char Event[256];
+    char Event[400];
     char Trader[32];
     char UpdateTime[32];
 };
@@ -429,7 +446,7 @@ struct TAppStatus
     char CommitID[16];
     char UtilsCommitID[16];
     char APIVersion[32];
-    char StartScript[256];
+    char StartScript[400];
     char UpdateTime[32];
 };
 

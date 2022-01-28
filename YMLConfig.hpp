@@ -75,7 +75,7 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         ret.Port = sourceConfig["Port"].as<int>();
         ret.Source = sourceConfig["Source"].as<string>();
         ret.TotalTick = sourceConfig["TotalTick"].as<unsigned int>();
-        ret.IPCKey = sourceConfig["IPCKey"].as<unsigned int>();
+        ret.IPCKey = sourceConfig["MarketChannelKey"].as<unsigned int>();
         ret.RecvTimeOut = sourceConfig["RecvTimeOut"].as<unsigned int>();
         ret.CallAuctionPeriod = sourceConfig["CallAuctionPeriod"].as<string>();
         YAML::Node con_period = sourceConfig["ContinuousAuctionPeriod"];
@@ -200,6 +200,7 @@ struct XTraderConfig
     string Broker;
     string BrokerID;
     string Account;
+    int BussinessType;
     string Password;
     string AppID;
     string AuthCode;
@@ -234,6 +235,7 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.Broker = sourceConfig["Broker"].as<string>();
         ret.BrokerID = sourceConfig["BrokerID"].as<string>();
         ret.Account = sourceConfig["Account"].as<string>();
+        ret.BussinessType = sourceConfig["BussinessType"].as<int>();
         ret.Password = sourceConfig["Password"].as<string>();
         ret.AppID = sourceConfig["AppID"].as<string>();
         ret.AuthCode = sourceConfig["AuthCode"].as<string>();
@@ -595,6 +597,35 @@ static bool LoadOrderParameter(const char *yml, OrderParameter& ret, string& out
         ret.Volume = sourceConfig["Volume"].as<int>();
         ret.TimeOut = sourceConfig["TimeOut"].as<int>();
         ret.Count = sourceConfig["Count"].as<int>();
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
+struct XMonitorConfig
+{
+    string XServerIP;
+    int XServerPort;
+    string UserName;
+    string PassWord;
+};
+
+static bool LoadXMonitorConfig(const char *yml, XMonitorConfig& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        YAML::Node Config = YAML::LoadFile(yml);
+        YAML::Node sourceConfig = Config["XMonitorConfig"];
+        ret.XServerIP = sourceConfig["XServerIP"].as<string>();
+        ret.XServerPort = sourceConfig["XServerPort"].as<int>();
+        ret.UserName = sourceConfig["UserName"].as<string>();
+        ret.PassWord = sourceConfig["PassWord"].as<string>();
     }
     catch(YAML::Exception& e)
     {

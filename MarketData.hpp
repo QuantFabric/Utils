@@ -19,6 +19,8 @@ struct StockIndexMarketData
     double LastPrice;
     int Volume;
     double Turnover;
+    double PreSettlementPrice;
+    double PreClosePrice;
     double OpenInterest;
     double OpenPrice;
     double HighestPrice;
@@ -131,7 +133,6 @@ static void Check(StockIndexMarketData& data)
         data.AskPrice5 = 0;
     }
 }
-
 
 }
 
