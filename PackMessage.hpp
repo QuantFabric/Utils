@@ -35,7 +35,8 @@ enum EClientType
     EMonitor = 2,
     EMarket = 3,
     ERisk = 4,
-    EWatcher = 5
+    EWatcher = 5, 
+    EQuant = 6
 };
 
 struct TLoginRequest
@@ -487,19 +488,9 @@ struct PackMessage
         TRiskReport RiskReport;                         // 0XFF0A
         TColoStatus ColoStatus;                         // 0XFF0B
         TAppStatus AppStatus;                           // 0XFF0C
+        MarketData::StockIndexMarketDataSet FutureMarketData; // 0XFFB1
+        MarketData::StockIndexMarketDataSet StockMarketData;  // 0XFFB2
     };
-};
-
-struct TFutureMarketDataMessage
-{
-    unsigned int MessageType;
-    MarketData::StockIndexMarketDataSet MarketData; // 0XFFB1
-};
-
-struct TStockMarketDataMessage
-{
-    unsigned int MessageType;
-    MarketData::StockIndexMarketDataSet MarketData; // 0XFFB2
 };
 
 }

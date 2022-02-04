@@ -11,7 +11,6 @@ public:
     {
         return m_pInstance;
     }
-
 private:
     static T *m_pInstance;
     Singleton() {}
