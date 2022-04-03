@@ -1,7 +1,7 @@
 #include "HPPackClient.h"
 
 bool HPPackClient::m_Connected;
-moodycamel::ConcurrentQueue<Message::PackMessage> HPPackClient::m_PackMessageWQueue;
+moodycamel::ConcurrentQueue<Message::PackMessage> HPPackClient::m_PackMessageQueue(1 << 1024);
 
 extern Utils::Logger *gLogger;
 
@@ -22,6 +22,7 @@ HPPackClient::HPPackClient(const char *ip, unsigned int port)
     HP_TcpPackClient_SetMaxPackSize(m_pClient, 0xFFFF);
     HP_TcpPackClient_SetPackHeaderFlag(m_pClient, 0x169);
     ::HP_TcpClient_SetKeepAliveTime(m_pClient, 30*1000);
+    m_Connected = false;
 }
 
 void HPPackClient::Start()
@@ -36,7 +37,7 @@ void HPPackClient::Start()
     }
     else
     {
-        sprintf(errorString, "HPPackClient::Start connected to server[%s:%d] failed, error code: %d error massage: %s",
+        sprintf(errorString, "HPPackClient::Start connected to server[%s:%d] failed, error code:%d error massage:%s",
                 m_ServerIP.c_str(), m_ServerPort, ::HP_Client_GetLastError(m_pClient), HP_Client_GetLastErrorDesc(m_pClient));
         Utils::gLogger->Log->warn(errorString);
     }
@@ -48,25 +49,6 @@ void HPPackClient::Stop()
     //记录客户端(::HP_Client_GetConnectionID(m_pClient));
 }
 
-void HPPackClient::SendData(HP_Client pClient, const unsigned char *pBuffer, int iLength)
-{
-    static std::list<Message::PackMessage> bufferQueue;
-    if(!m_Connected)
-    {
-        Utils::gLogger->Log->warn("HPPackClient::SendData failed, disconnected to server");
-        Message::PackMessage message;
-        memset(&message, 0, sizeof(message));
-        memcpy(&message, pBuffer, sizeof(message));
-        bufferQueue.push_back(message);
-        return;
-    }
-    for (auto it = bufferQueue.begin(); it != bufferQueue.end(); it++)
-    {
-        ::HP_Client_Send(pClient, reinterpret_cast<const unsigned char *>(&(*it)), sizeof(*it));
-    }
-    bufferQueue.clear();
-    ::HP_Client_Send(pClient, pBuffer, iLength);
-}
 void HPPackClient::SendData(const unsigned char *pBuffer, int iLength)
 {
     static std::list<Message::PackMessage> bufferQueue;
@@ -88,7 +70,7 @@ void HPPackClient::SendData(const unsigned char *pBuffer, int iLength)
     bool ret = ::HP_Client_Send(m_pClient, pBuffer, iLength);
     if(!ret)
     {
-        Utils::gLogger->Log->warn("HPPackClient::SendData failed, sys error code: {}, error message: {}",
+        Utils::gLogger->Log->warn("HPPackClient::SendData failed, sys error code:{}, error message:{}",
                                     SYS_GetLastError(), ::HP_Client_GetLastErrorDesc(m_pClient));
     }
 }
@@ -120,7 +102,7 @@ En_HP_HandleResult __stdcall HPPackClient::OnReceive(HP_Server pSender, HP_CONNI
 {
     Message::PackMessage message;
     memcpy(&message, pData, sizeof(message));
-    m_PackMessageWQueue.enqueue(message);
+    m_PackMessageQueue.enqueue(message);
     return HR_OK;
 }
 
@@ -133,7 +115,7 @@ En_HP_HandleResult __stdcall HPPackClient::OnClose(HP_Server pSender, HP_CONNID 
     m_Connected = false;
 
     char errorString[512] = {0};
-    sprintf(errorString, "HPPackClient::OnClose connID:%d %s:%d closed, sys error code: %d, error message: %s",
+    sprintf(errorString, "HPPackClient::OnClose connID:%d %s:%d closed, sys error code:%d, error message:%s",
             dwConnID, szAddress, usPort, SYS_GetLastError(), ::HP_Client_GetLastErrorDesc(pSender));
     Utils::gLogger->Log->warn(errorString);
     return HR_OK;

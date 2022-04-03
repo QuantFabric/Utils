@@ -2,13 +2,9 @@
 
 extern Utils::Logger *gLogger;
 
-std::string HPPackServer::m_ServerIP;
-unsigned int HPPackServer::m_ServerPort;
 std::unordered_map<HP_CONNID, Connection> HPPackServer::m_sConnections;
 std::unordered_map<HP_CONNID, Connection> HPPackServer::m_newConnections;
 moodycamel::ConcurrentQueue<Message::PackMessage> HPPackServer::m_PackMessageQueue(1 << 10);
-moodycamel::ConcurrentQueue<Message::TFutureMarketDataMessage> HPPackServer::m_FutureMarketDataMessageQueue(1 << 10);
-moodycamel::ConcurrentQueue<Message::TStockMarketDataMessage> HPPackServer::m_StockMarketDataMessageQueue(1 << 10);
 
 HPPackServer::HPPackServer(const char *ip, unsigned int port)
 {
@@ -51,7 +47,7 @@ void HPPackServer::Start()
     }
     else
     {
-        sprintf(errorString, "HPPackServer::Start listen to %s:%d failed, error code: %d error massage: %s",
+        sprintf(errorString, "HPPackServer::Start listen to %s:%d failed, error code:%d error massage:%s",
                 m_ServerIP.c_str(), m_ServerPort, ::HP_Client_GetLastError(m_pServer), HP_Client_GetLastErrorDesc(m_pServer));
         Utils::gLogger->Log->warn(errorString);
     }
@@ -63,16 +59,16 @@ void HPPackServer::Stop()
     ::HP_Server_Stop(m_pServer);
 }
 
-void HPPackServer::SendData(HP_Server pServer, HP_CONNID dwConnID, const unsigned char *pBuffer, int iLength)
+void HPPackServer::SendData(HP_CONNID dwConnID, const unsigned char *pBuffer, int iLength)
 {
-    bool ret = ::HP_Server_Send(pServer, dwConnID, pBuffer, iLength);
+    bool ret = ::HP_Server_Send(m_pServer, dwConnID, pBuffer, iLength);
     if(!ret)
     {
         char errorString[512] = {0};
-        Utils::gLogger->Log->warn("HPPackServer::SendData failed, sys error: {}, error code: {}, error message: {}",
-                                  SYS_GetLastErrorStr(), HP_Client_GetLastError(pServer), HP_Client_GetLastErrorDesc(pServer));
-        sprintf(errorString, "HPPackServer::SendData failed, sys error: %s, error code: %d, error message: %s",
-                SYS_GetLastErrorStr(), HP_Client_GetLastError(pServer), HP_Client_GetLastErrorDesc(pServer));
+        Utils::gLogger->Log->warn("HPPackServer::SendData failed, sys error:{}, error code:{}, error message:{}",
+                                  SYS_GetLastErrorStr(), HP_Client_GetLastError(m_pServer), HP_Client_GetLastErrorDesc(m_pServer));
+        sprintf(errorString, "HPPackServer::SendData failed, sys error:%s, error code:%d, error message:%s",
+                SYS_GetLastErrorStr(), HP_Client_GetLastError(m_pServer), HP_Client_GetLastErrorDesc(m_pServer));
         Utils::gLogger->Log->warn(errorString);
     }
 }
@@ -105,7 +101,7 @@ En_HP_HandleResult __stdcall HPPackServer::OnAccept(HP_Server pSender, HP_CONNID
     }
     mtx.unlock();
     char errorString[512] = {0};
-    sprintf(errorString, "HPPackServer::OnAccept accept an new connection dwConnID: %d from %s:%d",  dwConnID, szAddress, usPort);
+    sprintf(errorString, "HPPackServer::OnAccept accept an new connection dwConnID:%d from %s:%d",  dwConnID, szAddress, usPort);
     Utils::gLogger->Log->info(errorString);
     return HR_OK;
 }
@@ -121,48 +117,12 @@ En_HP_HandleResult __stdcall HPPackServer::OnReceive(HP_Server pSender, HP_CONNI
     int iAddressLen = sizeof(szAddress) / sizeof(TCHAR);
     USHORT usPort;
     ::HP_Server_GetRemoteAddress(pSender, dwConnID, szAddress, &iAddressLen, &usPort);
-
-    unsigned int MessageType = *(unsigned int*)(pData);
-    if(Message::EMessageType::EFutureMarketData== MessageType)
-    {
-        Message::TFutureMarketDataMessage message;
-        memcpy(&message, pData, iLength);
-        m_FutureMarketDataMessageQueue.enqueue(message);
-    }
-    else if(Message::EMessageType::EStockMarketData== MessageType)
-    {
-        Message::TStockMarketDataMessage message;
-        memcpy(&message, pData, iLength);
-        m_StockMarketDataMessageQueue.enqueue(message);
-    }
-    else
-    {
-        Message::PackMessage message;
-        memcpy(&message, pData, iLength);
-        char messageType[32] = {0};
-        sprintf(messageType, "0X%X", message.MessageType);
-        Utils::gLogger->Log->info("HPPackServer::OnReceive receive PackMessage, MessageType: {}", messageType);
-        // LoginRequest
-        if (Message::EMessageType::ELoginRequest == message.MessageType)
-        {
-            std::mutex mtx;
-            mtx.lock();
-            auto it = m_sConnections.find(dwConnID);
-            if (it != m_sConnections.end())
-            {
-                it->second.ClientType = message.LoginRequest.ClientType;
-                strncpy(it->second.Account, message.LoginRequest.Account, sizeof(it->second.Account));
-                strncpy(it->second.PassWord, message.LoginRequest.PassWord, sizeof(it->second.PassWord));
-                strncpy(it->second.UUID, message.LoginRequest.UUID, sizeof(it->second.UUID));
-                char errorString[512] = {0};
-                sprintf(errorString, "HPPackServer::OnReceive accept an new Client login from %s:%d, Account: %s PassWord: %s",
-                        szAddress, usPort, message.LoginRequest.Account, message.LoginRequest.PassWord);
-                Utils::gLogger->Log->info(errorString);
-            }
-            mtx.unlock();
-        }
-        m_PackMessageQueue.enqueue(message);
-    }
+    Message::PackMessage message;
+    memcpy(&message, pData, iLength);
+    char messageType[32] = {0};
+    sprintf(messageType, "0X%X", message.MessageType);
+    Utils::gLogger->Log->info("HPPackServer::OnReceive receive PackMessage, MessageType:{}", messageType);
+    m_PackMessageQueue.enqueue(message);
     return HR_OK;
 }
 
@@ -187,7 +147,7 @@ En_HP_HandleResult __stdcall HPPackServer::OnClose(HP_Server pSender, HP_CONNID 
     }
     mtx.unlock();
     char errorString[512] = {0};
-    sprintf(errorString, "HPPackServer::OnClose have an connection dwConnID: %d from %s:%d closed",  dwConnID, szAddress, usPort);
+    sprintf(errorString, "HPPackServer::OnClose have an connection dwConnID:%d from %s:%d closed",  dwConnID, szAddress, usPort);
     Utils::gLogger->Log->warn(errorString);
 
     return HR_OK;
@@ -195,8 +155,5 @@ En_HP_HandleResult __stdcall HPPackServer::OnClose(HP_Server pSender, HP_CONNID 
 
 En_HP_HandleResult __stdcall HPPackServer::OnShutdown(HP_Server pSender)
 {
-    char errorString[512] = {0};
-    sprintf(errorString, "HPPackServer::OnShutdown %s:%d Shutdown",  m_ServerIP.c_str(), m_ServerPort);
-    Utils::gLogger->Log->warn(errorString);
     return HR_OK;
 }

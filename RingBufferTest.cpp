@@ -23,10 +23,10 @@ public:
 private:
    int id;
    int value;
-   char data[128];
+   char data[760];
 };
 
-double getdetlatimeofday(struct timeval *begin, struct timeval *end)
+double getdeltatimeofday(struct timeval *begin, struct timeval *end)
 {
     return (end->tv_sec + end->tv_usec * 1.0 / 1000000) -
            (begin->tv_sec + begin->tv_usec * 1.0 / 1000000);
@@ -42,7 +42,7 @@ double getdetlatimeofday(struct timeval *begin, struct timeval *end)
     Utils::RingBuffer<Test> queue(1 << 10);
 #endif
 
-#define N (10 << 20)
+#define N (20000000)
 
 // 
 void produce()
@@ -59,7 +59,7 @@ void produce()
         }
     }
     gettimeofday(&end, NULL);
-    double tm = getdetlatimeofday(&begin, &end);
+    double tm = getdeltatimeofday(&begin, &end);
     printf("producer tid=%lu %f MB/s %f msg/s elapsed= %f size= %u\n", pthread_self(), N * sizeof(Test) * 1.0 / (tm * 1024 * 1024), N * 1.0 / tm, tm, i);
 }
 
@@ -75,11 +75,11 @@ void consume()
         if(queue.pop(test))
         {
            test.display();
-        i++;
+           i++;
         }
     }
     gettimeofday(&end, NULL);
-    double tm = getdetlatimeofday(&begin, &end);
+    double tm = getdeltatimeofday(&begin, &end);
     printf("consumer tid=%lu %f MB/s %f msg/s elapsed= %f size= %u\n", pthread_self(), N * sizeof(Test) * 1.0 / (tm * 1024 * 1024), N * 1.0 / tm, tm, i);
 }
 
@@ -102,8 +102,8 @@ int main(int argc, char const *argv[])
 }
 
 // test RingBuffer by Heap Memory in one Process
-// g++ --std=c++11 -DHEAP -DPRODUCER -DCONSUMER RingBufferTest.cpp -o test -pthread
-// g++ --std=c++11 -DIPC -DPRODUCER -DCONSUMER RingBufferTest.cpp -o test -pthread
+// g++ --std=c++11 -O2 -DHEAP -DPRODUCER -DCONSUMER RingBufferTest.cpp -o test -pthread
+// g++ --std=c++11 -O2 -DIPC -DPRODUCER -DCONSUMER RingBufferTest.cpp -o test -pthread
 // test RingBuffer by Share Memory in different Process
 // g++ --std=c++11 -O2 -DIPC -DPRODUCER RingBufferTest.cpp -o producer -pthread
 // g++ --std=c++11 -O2 -DIPC -DCONSUMER RingBufferTest.cpp -o consumer -pthread

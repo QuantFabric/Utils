@@ -26,28 +26,27 @@ class LockFreeQueue
 protected:
     typedef struct
     {
-        int m_mutex;
-        int lock;
-        int unlock;
-        inline void spinlock_init()
+        int m_Mutex;
+        int m_Lock;
+        int m_UnLock;
+        inline void Init()
         {
-            m_mutex = 0;
-            lock = 0;
-            unlock = 1;
+            m_Mutex = 0;
+            m_Lock = 1;
+            m_UnLock = 0;
         }
-        inline void spinlock_lock()
+        inline void Lock()
         {
-            while (!__sync_bool_compare_and_swap(&m_mutex, lock, 1))
+            while (!__sync_bool_compare_and_swap(&m_Mutex, 0, 1))
             {
                 usleep(1);
             }
         }
-        inline void spinlock_unlock()
+        inline void UnLock()
         {
-            __sync_bool_compare_and_swap(&m_mutex, unlock, 0);
+            __sync_lock_release(&m_Mutex);
         }
-    } spinlock_t;
-
+    }TSpinLock;
 public:
     // size:队列大小
     // key:共享内存key，默认为0，使用heap作为底层缓冲区。
@@ -69,7 +68,7 @@ public:
             m_head = (int *)(m_buffer + m_size);
             m_tail = (int *)((m_buffer + m_size) + sizeof(int));
         }
-        m_spinLock.spinlock_init();
+        m_SpinLock.Init();
     }
     ~LockFreeQueue()
     {
@@ -88,7 +87,7 @@ public:
         m_buffer = NULL;
     }
 
-    inline void reset()
+    inline void Reset()
     {
         if (0 == m_key)
         {
@@ -102,50 +101,50 @@ public:
         }
     }
 
-    bool isFull() const
+    bool IsFull() const
     {
         return *m_head == (*m_tail + 1) % m_size;
     }
 
-    bool isEmpty() const
+    bool IsEmpty() const
     {
         return *m_head == *m_tail;
     }
-    unsigned int front() const
+    unsigned int Front() const
     {
         return *m_head;
     }
 
-    unsigned int tail() const
+    unsigned int Tail() const
     {
         return *m_tail;
     }
 
-    bool push(const T &value)
+    bool Push(const T &value)
     {
-        m_spinLock.spinlock_lock();
-        if (isFull())
+        m_SpinLock.Lock();
+        if (IsFull())
         {
-            m_spinLock.spinlock_unlock();
+            m_SpinLock.UnLock();
             return false;
         }
         memcpy(m_buffer + *m_tail, &value, sizeof(T));
         *m_tail = (*m_tail + 1) % m_size;
-        m_spinLock.spinlock_unlock();
+        m_SpinLock.UnLock();
         return true;
     }
 
-    bool pop(T &value)
+    bool Pop(T &value)
     {
-        m_spinLock.spinlock_lock();
-        if (isEmpty())
+        m_SpinLock.Lock();
+        if (IsEmpty())
         {
-            m_spinLock.spinlock_unlock();
+            m_SpinLock.UnLock();
             return false;
         }
         memcpy(&value, m_buffer + *m_head, sizeof(T));
         *m_head = (*m_head + 1) % m_size;
-        m_spinLock.spinlock_unlock();
+        m_SpinLock.UnLock();
         return true;
     }
 
@@ -154,7 +153,7 @@ protected:
     int *m_head;
     int *m_tail;
     unsigned int m_size;
-    spinlock_t m_spinLock;
+    TSpinLock m_SpinLock;
     T *m_buffer;
 };
 

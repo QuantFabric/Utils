@@ -35,19 +35,19 @@ protected:
         inline void Init()
         {
             m_Mutex = 0;
-            m_Lock = 0;
-            m_UnLock = 1;
+            m_Lock = 1;
+            m_UnLock = 0;
         }
         inline void Lock()
         {
-            while (!__sync_bool_compare_and_swap(&m_Mutex, m_Lock, 1))
+            while (!__sync_bool_compare_and_swap(&m_Mutex, 0, 1))
             {
                 usleep(1);
             }
         }
         inline void UnLock()
         {
-            __sync_bool_compare_and_swap(&m_Mutex, m_UnLock, 0);
+            __sync_lock_release(&m_Mutex);
         }
     }TSpinLock;
 
@@ -63,26 +63,26 @@ public:
     IPCLockFreeQueue()
     {
         m_ChannelSize = N;
+        m_SpinLock.Init();
+        m_ChannelIndexMap.clear();
     }
     // key:共享内存key
     // channelCount: 通道数量，即支持账户数量
     void Init(unsigned int key = 0XFF000001, unsigned int channelCount = 20)
     {
-        m_IPCKey = key;
+        m_ChannelKey = key;
         m_ChannelCount = channelCount;
         m_Buffer = NULL;
-        m_ChannelIndexMap.clear();
         if(key <= 0 || m_ChannelSize == 0 || m_ChannelCount == 0)
         {
             printf("IPCLockFreeQueue Parameter Error, key=0X%X, channelSize=%u, channelCount= %u\n", 
-                    m_IPCKey, m_ChannelSize, m_ChannelCount);
+                    m_ChannelKey, m_ChannelSize, m_ChannelCount);
             return;
         }
-        int shmid = shmget(m_IPCKey, sizeof(TChannel) * m_ChannelCount, 0666 | IPC_CREAT);
+        int shmid = shmget(m_ChannelKey, sizeof(TChannel) * m_ChannelCount, 0666 | IPC_CREAT);
         m_Buffer = static_cast<TChannel*>(shmat(shmid, 0, 0));
-        m_SpinLock.Init();
-        printf("IPCLockFreeQueue key=0X%X, channelSize=%u, channelCount= %u Size: %.2fMB\n", 
-                    m_IPCKey, m_ChannelSize, m_ChannelCount, 1.0 * sizeof(TChannel) * m_ChannelCount / (1024*1024));
+        printf("IPCLockFreeQueue ChannelKey=0X%X, channelSize=%u, channelCount= %u Size: %.2fMB\n", 
+                    m_ChannelKey, m_ChannelSize, m_ChannelCount, 1.0 * sizeof(TChannel) * m_ChannelCount / (1024*1024));
     }
 
     ~IPCLockFreeQueue()
@@ -103,6 +103,9 @@ public:
 
     inline void ResetChannel(const char* account)
     {
+#ifdef LOCK
+        m_SpinLock.Lock();
+#endif
         std::string Account = account;
         for(int i = 0; i < m_ChannelCount; i++)
         { 
@@ -110,22 +113,22 @@ public:
             {
                 memset(&m_Buffer[i].Queue, 0, m_ChannelSize * sizeof(T));
                 m_Buffer[i].Index = i;
-                #ifdef LOCK
-                m_SpinLock.Lock();
-                #endif
                 m_Buffer[i].Head = 0;
                 m_Buffer[i].Tail = 0;
-                #ifdef LOCK
-                 m_SpinLock.UnLock();
-                #endif
                 break;
             }
         }
+#ifdef LOCK
+        m_SpinLock.UnLock();
+#endif
     }
 
     bool Push(const char* account, const T& value)
     {
         bool ret = false;
+#ifdef LOCK
+        m_SpinLock.Lock();
+#endif
         auto it = m_ChannelIndexMap.find(account);
         if(it != m_ChannelIndexMap.end())
         {
@@ -133,22 +136,22 @@ public:
             if (!IsFull(index))
             {
                 memcpy(&m_Buffer[index].Queue[m_Buffer[index].Tail], &value, sizeof(T));
-                #ifdef LOCK
-                m_SpinLock.Lock();
-                #endif
                 m_Buffer[index].Tail = (m_Buffer[index].Tail + 1) % m_ChannelSize;
-                #ifdef LOCK
-                m_SpinLock.UnLock();
-                #endif
                 ret = true;
             }
         }
+#ifdef LOCK
+                m_SpinLock.UnLock();
+#endif
         return ret;
     }
 
     bool Pop(const char* account, T& value)
     {
         bool ret = false;
+#ifdef LOCK
+        m_SpinLock.Lock();
+#endif
         auto it = m_ChannelIndexMap.find(account);
         if(it != m_ChannelIndexMap.end())
         {
@@ -156,22 +159,22 @@ public:
             if(!IsEmpty(index))
             {
                 memcpy(&value, &m_Buffer[index].Queue[m_Buffer[index].Head], sizeof(T));
-                #ifdef LOCK
-                m_SpinLock.Lock();
-                #endif
                 m_Buffer[index].Head = (m_Buffer[index].Head + 1) % m_ChannelSize;
-                #ifdef LOCK
-                m_SpinLock.UnLock();
-                #endif
                 ret = true;
             }
         }
+#ifdef LOCK
+        m_SpinLock.UnLock();
+#endif
         return ret;
     }
 
     bool Pop(const char* account, std::list<T>& items)
     {
         bool ret = false;
+#ifdef LOCK
+        m_SpinLock.Lock();
+#endif
         auto it = m_ChannelIndexMap.find(account);
         if(it != m_ChannelIndexMap.end())
         {
@@ -180,22 +183,22 @@ public:
             {
                 T value;
                 memcpy(&value, &m_Buffer[index].Queue[m_Buffer[index].Head], sizeof(T));
-                #ifdef LOCK
-                m_SpinLock.Lock();
-                #endif
                 m_Buffer[index].Head = (m_Buffer[index].Head + 1) % m_ChannelSize;
-                #ifdef LOCK
-                m_SpinLock.UnLock();
-                #endif
                 items.push_back(value);
                 ret = true;
             }
         }
+#ifdef LOCK
+        m_SpinLock.UnLock();
+#endif
         return ret;
     }
 protected:
     void InitChannelIndex(const char* account)
     {
+#ifdef LOCK
+        m_SpinLock.Lock();
+#endif
         for (size_t i = 0; i < m_ChannelCount; i++)
         {
             std::string Account = m_Buffer[i].Account;
@@ -206,14 +209,8 @@ protected:
                 {
                     m_Buffer[i].Index = i;
                     strncpy(m_Buffer[i].Account, account, sizeof(m_Buffer[i].Account));
-                    #ifdef LOCK
-                    m_SpinLock.Lock();
-                    #endif
                     m_Buffer[i].Head = 0;
                     m_Buffer[i].Tail = 0;
-                    #ifdef LOCK
-                    m_SpinLock.UnLock();
-                    #endif
                     memset(m_Buffer[i].Queue, 0, m_ChannelSize * sizeof(T));
                     m_ChannelIndexMap[account] = i;
                     break;
@@ -224,6 +221,9 @@ protected:
                 m_ChannelIndexMap[Account] = i;
             }
         }
+#ifdef LOCK
+        m_SpinLock.UnLock();
+#endif
     }
 
     int Head(int index) const
@@ -246,7 +246,7 @@ protected:
         return m_Buffer[index].Head == m_Buffer[index].Tail;
     }
 protected:
-    unsigned int m_IPCKey;
+    unsigned int m_ChannelKey;
     unsigned int m_ChannelSize;
     unsigned int m_ChannelCount;
     TSpinLock m_SpinLock;

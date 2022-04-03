@@ -32,7 +32,7 @@ public:
     virtual ~HPPackServer();
     void Start();
     void Stop();
-    static void SendData(HP_Server pServer, HP_CONNID dwConnID, const unsigned char *pBuffer, int iLength);
+    void SendData(HP_CONNID dwConnID, const unsigned char *pBuffer, int iLength);
 protected:
     static En_HP_HandleResult __stdcall OnPrepareListen(HP_Server pSender, UINT_PTR soListen);
     static En_HP_HandleResult __stdcall OnAccept(HP_Server pSender, HP_CONNID dwConnID, UINT_PTR soClient);
@@ -41,14 +41,12 @@ protected:
     static En_HP_HandleResult __stdcall OnClose(HP_Server pSender, HP_CONNID dwConnID, En_HP_SocketOperation enOperation, int iErrorCode);
     static En_HP_HandleResult __stdcall OnShutdown(HP_Server pSender);
 public:
-    static moodycamel::ConcurrentQueue<Message::TFutureMarketDataMessage> m_FutureMarketDataMessageQueue;
-    static moodycamel::ConcurrentQueue<Message::TStockMarketDataMessage> m_StockMarketDataMessageQueue;
     static moodycamel::ConcurrentQueue<Message::PackMessage> m_PackMessageQueue;
     static std::unordered_map<HP_CONNID, Connection> m_sConnections;
     static std::unordered_map<HP_CONNID, Connection> m_newConnections;
 private:
-    static std::string m_ServerIP;
-    static unsigned int m_ServerPort;
+    std::string m_ServerIP;
+    unsigned int m_ServerPort;
     HP_TcpServer m_pServer;
     HP_TcpServerListener m_pListener;
 };

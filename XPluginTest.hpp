@@ -6,7 +6,7 @@ class PluginTest
 public:
     void print()
     {
-        printf("PluginTest::print");
+        printf("PluginTest::print\n");
     }
 };
 

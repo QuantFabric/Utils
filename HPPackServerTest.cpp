@@ -6,14 +6,30 @@ int main()
 {
     // init Logger
     Utils::gLogger = Utils::Singleton<Utils::Logger>::GetInstance();
-    HPPackServer server("0.0.0.0", 6000);
-    server.Start();
+    Utils::gLogger->setLogPath("./", "Server");
+    Utils::gLogger->Init();
+    Utils::gLogger->setDebugLevel();
+    HPPackServer Server("0.0.0.0", 6000);
+    Server.Start();
     while (true)
     {
-        sleep(1);
+        Message::PackMessage message;
+        bool ret = Server.m_PackMessageQueue.try_dequeue(message);
+        if(ret)
+        {
+            char buffer[256] = {0};
+            sprintf(buffer, "Receive an new PackMessage, MessageType:0X%X", message.MessageType);
+            Utils::gLogger->Log->info(buffer);
+            Utils::gLogger->Console->info(buffer);
+            if(Message::EMessageType::ETest == message.MessageType)
+            {
+                Utils::gLogger->Log->info("Test Message, Account:{}, Content:{}", message.Test.Account, message.Test.Content);
+                Utils::gLogger->Console->info("Test Message, Account:{}, Content:{}", message.Test.Account, message.Test.Content);
+            }
+        }
     }
     
     return 0;
 }
 
-// g++ --std=c++17 HPPackServer.cpp HPPackServerTest.cpp Logger.cpp -o server -pthread -lhpsocket4c -lspdlog  -I/home/xxx/QuantFabric/XAPI/HP-Socket/5.8.2/include -L/home/xxx/QuantFabric/XAPI/HP-Socket/5.8.2/lib -I/home/xxx/QuantFabric/XAPI/SPDLog/include -L/home/xxx/QuantFabric/XAPI/SPDLog/lib/ -I/home/xxx/QuantFabric/XAPI/ConcurrentQueue/
+// g++ -O2 --std=c++11 HPPackServer.cpp HPPackServerTest.cpp Logger.cpp -o server -pthread -lhpsocket4c -lspdlog  -I/home/xtrader/QuantFabric/XAPI/HP-Socket/5.8.2/include/ -I/home/xtrader/QuantFabric/XAPI/SPDLog/1.8.5/include/ -I/home/xtrader/QuantFabric/XAPI/ConcurrentQueue/1.0.3/ -L/home/xtrader/QuantFabric/XAPI/HP-Socket/5.8.2/lib/ -L/home/xtrader/QuantFabric/XAPI/SPDLog/1.8.5/lib/ 

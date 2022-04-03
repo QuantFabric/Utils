@@ -6,12 +6,23 @@
 namespace Message
 {
 
-#define PLUGIN_MARKET           "Market"
-#define PLUGIN_ORDERMANAGER     "OrderManager"
-#define PLUGIN_EVENTLOG         "EventLog"
-#define PLUGIN_MONITOR          "Monitor"
-#define PLUGIN_RISKJUDGE        "RiskJudge"
-#define PLUGIN_PERMISSION       "Permission"
+#define MESSAGE_FUTUREMARKET           "FutureMarket"
+#define MESSAGE_STOCKMARKET            "StockMarket"
+#define MESSAGE_ORDERSTATUS            "OrderStatus"
+#define MESSAGE_ACCOUNTFUND            "AccountFund"
+#define MESSAGE_ACCOUNTPOSITION        "AccountPosition"
+#define MESSAGE_EVENTLOG               "EventLog"
+#define MESSAGE_COLOSTATUS             "ColoStatus"
+#define MESSAGE_APPSTATUS              "AppStatus"
+#define MESSAGE_RISKREPORT             "RiskReport"
+#define MESSAGE_LOGINRESPONSE          "LoginResponse"
+
+#define PLUGIN_MARKET            "Market"
+#define PLUGIN_ORDERMANAGER      "OrderManager"
+#define PLUGIN_EVENTLOG          "EventLog"
+#define PLUGIN_MONITOR           "Monitor"
+#define PLUGIN_RISKJUDGE         "RiskJudge"
+#define PLUGIN_PERMISSION        "Permission"
 
 #define PLUGIN_LIST             "Market|OrderManager|EventLog|Monitor|RiskJudge|Permission"
 
@@ -31,12 +42,12 @@ enum ELoginStatus
 
 enum EClientType
 {
-    ETrader = 1,
-    EMonitor = 2,
-    EMarket = 3,
-    ERisk = 4,
-    EWatcher = 5, 
-    EQuant = 6
+    EXTRADER = 1,
+    EXMONITOR = 2,
+    EXMARKETCENTER = 3,
+    EXRISKJUDGE = 4,
+    EXWATCHER = 5, 
+    EXQUANT = 6
 };
 
 struct TLoginRequest
@@ -47,7 +58,8 @@ struct TLoginRequest
     char PassWord[16];
     char Operation[16];
     char Role[16];
-    char Plugins[400];
+    char Plugins[320];
+    char Messages[160];
     char UUID[32];
 };
 
@@ -66,17 +78,29 @@ struct TLoginResponse
     char Account[16];
     char PassWord[16];
     char Role[16];
-    char Plugins[400];
+    char Plugins[320];
+    char Messages[160];
     char UpdateTime[32];
     int ErrorID;
     char ErrorMsg[64];
+};
+
+enum EExchange
+{
+    ESHSE = 01,
+    ESZSE = 02,
+    EBJSE = 03,
+    ECFFEX = 11,
+    EDCE = 12,
+    ECZCE = 13,
+    ESHFE = 14,
 };
 
 enum EBusinessType
 {
     ESTOCK = 1,
     ECREDIT = 2,
-    EFUTURE = 3
+    EFUTURE = 3,
 };
 
 enum EOrderType
@@ -90,29 +114,39 @@ enum EOrderType
 enum EOrderDirection
 {
     EBUY = 1,
-    ESELL = 2
+    ESELL = 2,
+    EREVERSE_REPO = 3, // 国债逆回购申购
+    ESUBSCRIPTION = 4, // 新股、新债申购
+    EALLOTMENT = 5, // 配股配债认购
+    ECOLLATERAL_TRANSFER_IN = 6, // 担保品转入
+    ECOLLATERAL_TRANSFER_OUT = 7, // 担保品转出
+    EMARGIN_BUY = 8, // 融资买入
+    EREPAY_MARGIN_BY_SELL = 9, // 卖券还款
+    ESHORT_SELL = 10, // 融券卖出
+    EREPAY_STOCK_BY_BUY = 11, // 买券还券
+    EREPAY_STOCK_DIRECT = 12, // 现券还券
 };
 
 enum EOrderOffset
 {
     EOPEN = 1,
     ECLOSE = 2,
-    ECLOSETODAY = 3,
-    ECLOSEYESTODAY = 4
+    ECLOSE_TODAY = 3,
+    ECLOSE_YESTODAY = 4,
 };
 
 enum ERiskStatusType
 {
-    EPrepareChecked = 1, // 等待检查
-    ECheckedPass = 2, // 风控检查通过
-    ECheckedNoPass = 3, // 风控检查不通过
-    ENoChecked = 4, // 不进行风控检查
-    EInitChecked = 5, // 初始化检查
+    EPREPARE_CHECKED = 1, // 等待检查
+    ECHECKED_PASS = 2, // 风控检查通过
+    ECHECKED_NOPASS = 3, // 风控检查不通过
+    ENOCHECKED = 4, // 不进行风控检查
+    ECHECK_INIT = 5, // 初始化检查
 };
 
 enum EEngineType
 {
-    ETraderOrder = 0XAF01,
+    ETRADER_ORDER = 0XAF01,
 };
 
 struct TOrderRequest
@@ -122,11 +156,12 @@ struct TOrderRequest
     char Product[16];
     char Account[16];
     char Ticker[16];
+    char ExchangeID[16];
+    uint8_t BussinessType;
     uint8_t OrderType;
     uint8_t Direction;
     uint8_t Offset;
     uint8_t RiskStatus;
-    uint8_t BussinessType;
     int OrderToken;
     int EngineID;
     int UserReserved1;
@@ -135,10 +170,11 @@ struct TOrderRequest
     int Volume;
     char RecvMarketTime[32];
     char SendTime[32];
-    char UpdateTime[32];
+    char RiskID[16];
+    char Trader[16];
     int ErrorID;
     char ErrorMsg[256];
-    char RiskID[16];
+    char UpdateTime[32];
 };
 
 struct TActionRequest
@@ -146,30 +182,33 @@ struct TActionRequest
     char Colo[16];
     char Account[16];
     char OrderRef[32];
+    char ExchangeID[16];
+    uint8_t BussinessType;
     int EngineID;
     uint8_t RiskStatus;
-    char UpdateTime[32];
+    char Trader[16];
+    char RiskID[16];
     int ErrorID;
     char ErrorMsg[256];
-    char RiskID[16];
+    char UpdateTime[32];
 };
 
 enum EOrderStatus
 {
-    EOrderSended = 1,
-    EBrokerACK = 2,
-    EExchangeACK = 3,
-    EPartTraded = 4,
-    EAllTraded = 5,
-    ECancelling = 6,
-    ECancelled = 7,
-    EPartTradedCancelled = 8,
-    EBrokerError = 9,
-    EExchangeError = 10,
-    EActionError = 11,
-    ERiskRejected = 12,
-    ERiskCancelRejected = 13,
-    ERiskCheckInit = 14,
+    EORDER_SENDED = 1,
+    EBROKER_ACK = 2,
+    EEXCHANGE_ACK = 3,
+    EPARTTRADED = 4,
+    EALLTRADED = 5,
+    ECANCELLING = 6,
+    ECANCELLED = 7,
+    EPARTTRADED_CANCELLED = 8,
+    EBROKER_ERROR = 9,
+    EEXCHANGE_ERROR = 10,
+    EACTION_ERROR = 11,
+    ERISK_ORDER_REJECTED = 12,
+    ERISK_ACTION_REJECTED = 13,
+    ERISK_CHECK_INIT = 14,
 };
 
 enum EOrderSide
@@ -184,43 +223,6 @@ enum EOrderSide
     ECLOSE_SHORT = 8
 };
 
-enum ECommandType
-{
-    EUpdate_Risk_Limit = 1,
-    EUpdate_Risk_Account_Locked = 2,
-    EUpdate_UserPermission = 3,
-    EKillApp = 4, 
-    EStartApp = 5
-};
-
-struct TCommand
-{
-    uint8_t CmdType;
-    char Colo[16];
-    char Account[16];
-    char Command[512];
-};
-
-enum EEventLogLevel
-{
-    EInfo = 1,
-    EWarning = 2,
-    EError = 3
-};
-
-struct TEventLog
-{
-    char Colo[16];
-    char Broker[16];
-    char Product[16];
-    char Account[16];
-    char Ticker[16];
-    char App[32];
-    char Event[400];
-    int Level;
-    char UpdateTime[32];
-};
-
 struct TOrderStatus
 {
     char Colo[16];
@@ -229,6 +231,7 @@ struct TOrderStatus
     char Account[16];
     char Ticker[16];
     char ExchangeID[16];
+    uint8_t BussinessType;
     char OrderRef[32];
     char OrderSysID[32];
     char OrderLocalID[32];
@@ -239,7 +242,6 @@ struct TOrderStatus
     uint8_t OrderType;
     uint8_t OrderSide;
     uint8_t OrderStatus;
-    uint8_t BussinessType;
     double SendPrice;
     unsigned int SendVolume;
     unsigned int TotalTradedVolume;
@@ -253,10 +255,11 @@ struct TOrderStatus
     char InsertTime[32];
     char BrokerACKTime[32];
     char ExchangeACKTime[32];
-    char UpdateTime[32];
+    char RiskID[16];
+    char Trader[16];
     int ErrorID;
     char ErrorMsg[256];
-    char RiskID[16];
+    char UpdateTime[32];
 };
 
 struct TAccountFund
@@ -273,10 +276,10 @@ struct TAccountFund
     double CloseProfit; // 平仓盈亏
     double PositionProfit; // 持仓盈亏
     double Available; // 可用资金
-    double WithdrawQuota; // 
+    double WithdrawQuota; // 可取资金额度
     double ExchangeMargin; // 交易所保证金
-    double Balance; // 
-    double PreBalance; // 
+    double Balance; // 总资产
+    double PreBalance; // 日初总资产
     char UpdateTime[32]; 
 };
 
@@ -318,8 +321,8 @@ struct TAccountPosition
     char Product[16];
     char Account[16];
     char Ticker[16];
-    uint8_t BussinessType;
     char ExchangeID[16];
+    uint8_t BussinessType;
     union
     {
         TFuturePosition FuturePosition;
@@ -328,20 +331,57 @@ struct TAccountPosition
     char UpdateTime[32];
 };
 
+enum ECommandType
+{
+    EUPDATE_RISK_LIMIT = 1,
+    EUPDATE_RISK_ACCOUNT_LOCKED = 2,
+    EUPDATE_USERPERMISSION = 3,
+    EKILL_APP = 4, 
+    ESTART_APP = 5,
+    ETRANSFER_FUND_IN = 6,
+    ETRANSFER_FUND_OUT = 7,
+    EREPAY_MARGIN_DIRECT = 8,
+};
+
+struct TCommand
+{
+    uint8_t CmdType;
+    char Colo[16];
+    char Account[16];
+    char Command[512];
+};
+
+enum EEventLogLevel
+{
+    EINFO = 1,
+    EWARNING = 2,
+    EERROR = 3
+};
+
+struct TEventLog
+{
+    char Colo[16];
+    char Broker[16];
+    char Product[16];
+    char Account[16];
+    char Ticker[16];
+    char ExchangeID[16];
+    char App[32];
+    char Event[400];
+    int Level;
+    char UpdateTime[32];
+};
+
 enum ERiskRejectedType
 {
-    EFlowLimited = 1,
-    ESelfMatched = 2,
-    EAccountLocked = 3,
-    EOpenLongLocked = 4,
-    EOpenShortLocked = 5,
-    ECloseLongYdLocked = 6,
-    ECloseLongTdLocked = 7,
-    ECloseShortYdLocked = 8,
-    ECloseShortTdLocked = 9,
-    ETickerCancelLimited = 10,
-    EOrderCancelLimited = 11,
-    EInvalidPrice = 12
+    EFLOW_LIMITED = 1,
+    ESELF_MATCHED = 2,
+    EACCOUNT_LOCKED = 3,
+    EBUY_LOCKED = 4,
+    ESELL_LOCKED = 5,
+    ETICKER_ACTION_LIMITED = 6,
+    EORDER_ACTION_LIMITED = 7,
+    EINVALID_PRICE = 8,
 };
 
 enum ERiskLockedSide
@@ -354,10 +394,10 @@ enum ERiskLockedSide
 
 enum ERiskReportType
 {
-    ERiskLimit = ECommandType::EUpdate_Risk_Limit,
-    ERiskAccountLocked = ECommandType::EUpdate_Risk_Account_Locked,
-    ERiskTickerCancelled,
-    ERiskEventLog,
+    ERISK_LIMIT = ECommandType::EUPDATE_RISK_LIMIT,
+    ERISK_ACCOUNT_LOCKED = ECommandType::EUPDATE_RISK_ACCOUNT_LOCKED,
+    ERISK_TICKER_CANCELLED,
+    ERISK_EVENTLOG,
 };
 
 struct TRiskReport
@@ -369,7 +409,7 @@ struct TRiskReport
     char Product[16];
     char Account[16];
     char Ticker[16];
-    char RiskID[16];
+    char ExchangeID[16];
     uint8_t BussinessType;
     //  RiskLimitTable
     int FlowLimit;
@@ -382,6 +422,7 @@ struct TRiskReport
     int UpperLimit;
     // common
     char Event[400];
+    char RiskID[16];
     char Trader[32];
     char UpdateTime[32];
 };
@@ -488,8 +529,8 @@ struct PackMessage
         TRiskReport RiskReport;                         // 0XFF0A
         TColoStatus ColoStatus;                         // 0XFF0B
         TAppStatus AppStatus;                           // 0XFF0C
-        MarketData::StockIndexMarketDataSet FutureMarketData; // 0XFFB1
-        MarketData::StockIndexMarketDataSet StockMarketData;  // 0XFFB2
+        MarketData::TFutureMarketData FutureMarketData; // 0XFFB1
+        MarketData::TStockMarketData StockMarketData;   // 0XFFB2
     };
 };
 

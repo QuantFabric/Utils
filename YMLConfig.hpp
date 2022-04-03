@@ -54,8 +54,9 @@ struct MarketCenterConfig
     string ServerIP;
     int Port;
     string Source;
+    bool ToMonitor;
     unsigned int TotalTick;
-    unsigned int IPCKey;
+    unsigned int MarketChannelKey;
     unsigned int RecvTimeOut;
     std::string CallAuctionPeriod;
     std::vector<TradingPeriod> ContinuousAuctionPeriod;
@@ -74,8 +75,9 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         ret.ServerIP = sourceConfig["ServerIP"].as<string>();
         ret.Port = sourceConfig["Port"].as<int>();
         ret.Source = sourceConfig["Source"].as<string>();
+        ret.ToMonitor = sourceConfig["ToMonitor"].as<bool>();
         ret.TotalTick = sourceConfig["TotalTick"].as<unsigned int>();
-        ret.IPCKey = sourceConfig["MarketChannelKey"].as<unsigned int>();
+        ret.MarketChannelKey = sourceConfig["MarketChannelKey"].as<unsigned int>();
         ret.RecvTimeOut = sourceConfig["RecvTimeOut"].as<unsigned int>();
         ret.CallAuctionPeriod = sourceConfig["CallAuctionPeriod"].as<string>();
         YAML::Node con_period = sourceConfig["ContinuousAuctionPeriod"];
@@ -107,6 +109,7 @@ struct TickerProperty
 {
     int Index;
     string Ticker;
+    string ExchangeID;
 };
 
 static bool LoadTickerList(const char *yml, std::vector<TickerProperty>& ret, string& out)
@@ -124,6 +127,7 @@ static bool LoadTickerList(const char *yml, std::vector<TickerProperty>& ret, st
             YAML::Node property = sourceConfig[j];
             item.Index = property["TickerIndex"].as<int>();
             item.Ticker = property["Ticker"].as<string>();
+            item.ExchangeID = property["ExchangeID"].as<string>();
             ret.push_back(item);
         }
         
@@ -136,7 +140,7 @@ static bool LoadTickerList(const char *yml, std::vector<TickerProperty>& ret, st
     return ok;
 }
 
-static void CalculateTick(const MarketCenterConfig& config, MarketData::StockIndexMarketData& data)
+static void CalculateTick(const MarketCenterConfig& config, MarketData::TFutureMarketData& data)
 {
     data.Tick = -1;
     data.SectionFirstTick = -1;
@@ -166,28 +170,51 @@ static void CalculateTick(const MarketCenterConfig& config, MarketData::StockInd
         return;
     }
     int call_auction_time_sec = (hour * 3600 + minute * 60 + second) * 1000;
-    int first_section_last_tick = (config.IntContinuousAuctionPeriod[0].second - config.IntContinuousAuctionPeriod[0].first) / 500;
     if(int_time_sec == call_auction_time_sec)
     {
         data.Tick = 0;
+        data.LastTick = data.Tick;
         data.SectionFirstTick = 0;
-        data.SectionLastTick = first_section_last_tick;
+        data.SectionLastTick = (config.IntContinuousAuctionPeriod[0].second - config.IntContinuousAuctionPeriod[0].first) / 500;
         return;
     }
     // first section
     if (int_time >= config.IntContinuousAuctionPeriod[0].first && int_time < config.IntContinuousAuctionPeriod[0].second)
     {
         data.Tick = (int_time - config.IntContinuousAuctionPeriod[0].first) / 500 + 1;
+        data.LastTick = data.Tick;
         data.SectionFirstTick = 0;
-        data.SectionLastTick = first_section_last_tick;
+        data.SectionLastTick = (config.IntContinuousAuctionPeriod[0].second - config.IntContinuousAuctionPeriod[0].first) / 500;
         return;
     }
+    int PreSectionLastTick = (config.IntContinuousAuctionPeriod[0].second - config.IntContinuousAuctionPeriod[0].first) / 500;
     // second section
     if (int_time >= config.IntContinuousAuctionPeriod[1].first && int_time < config.IntContinuousAuctionPeriod[1].second)
     {
-        data.Tick = first_section_last_tick + (int_time - config.IntContinuousAuctionPeriod[1].first) / 500 + 1;
-        data.SectionFirstTick = first_section_last_tick + 1;
-        data.SectionLastTick = first_section_last_tick + (config.IntContinuousAuctionPeriod[1].second - config.IntContinuousAuctionPeriod[1].first) / 500 + 1;
+        data.Tick = PreSectionLastTick + (int_time - config.IntContinuousAuctionPeriod[1].first) / 500 + 1;
+        data.LastTick = data.Tick;
+        data.SectionFirstTick = PreSectionLastTick + 1;
+        data.SectionLastTick = PreSectionLastTick + (config.IntContinuousAuctionPeriod[1].second - config.IntContinuousAuctionPeriod[1].first) / 500;
+        return;
+    }
+    PreSectionLastTick = (PreSectionLastTick + (config.IntContinuousAuctionPeriod[1].second - config.IntContinuousAuctionPeriod[1].first) / 500);
+    // third section
+    if (int_time >= config.IntContinuousAuctionPeriod[2].first && int_time < config.IntContinuousAuctionPeriod[2].second)
+    {
+        data.Tick = PreSectionLastTick + (int_time - config.IntContinuousAuctionPeriod[2].first) / 500 + 1;
+        data.LastTick = data.Tick;
+        data.SectionFirstTick = PreSectionLastTick + 1;
+        data.SectionLastTick = PreSectionLastTick + (config.IntContinuousAuctionPeriod[2].second - config.IntContinuousAuctionPeriod[2].first) / 500;
+        return;
+    }
+    PreSectionLastTick = (PreSectionLastTick + (config.IntContinuousAuctionPeriod[2].second - config.IntContinuousAuctionPeriod[2].first) / 500);
+    // fourth section
+    if (int_time >= config.IntContinuousAuctionPeriod[3].first && int_time < config.IntContinuousAuctionPeriod[3].second)
+    {
+        data.Tick = PreSectionLastTick + (int_time - config.IntContinuousAuctionPeriod[3].first) / 500 + 1;
+        data.LastTick = data.Tick;
+        data.SectionFirstTick = PreSectionLastTick + 1;
+        data.SectionLastTick = PreSectionLastTick + (config.IntContinuousAuctionPeriod[3].second - config.IntContinuousAuctionPeriod[3].first) / 500;
         return;
     }
     data.Tick = -1;
@@ -195,7 +222,6 @@ static void CalculateTick(const MarketCenterConfig& config, MarketData::StockInd
 
 struct XTraderConfig
 {
-    string ExchangeID;
     string Product;
     string Broker;
     string BrokerID;
@@ -230,7 +256,6 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         out.clear();
         YAML::Node config = YAML::LoadFile(yml);
         YAML::Node sourceConfig = config["XTraderConfig"];
-        ret.ExchangeID = sourceConfig["ExchangeID"].as<string>();
         ret.Product = sourceConfig["Product"].as<string>();
         ret.Broker = sourceConfig["Broker"].as<string>();
         ret.BrokerID = sourceConfig["BrokerID"].as<string>();
@@ -392,8 +417,6 @@ struct XServerConfig
     string CloseTime;
     bool SnapShot;
     string BinPath;
-    string FutureBinPath;
-    string StockBinPath;
     string UserDBPath;
     string AppCheckTime;
 };
@@ -412,8 +435,6 @@ static bool LoadXServerConfig(const char *yml, XServerConfig& ret, string& out)
         ret.CloseTime = sourceConfig["CloseTime"].as<string>();
         ret.SnapShot = sourceConfig["SnapShot"].as<bool>();
         ret.BinPath = sourceConfig["BinPath"].as<string>();
-        ret.FutureBinPath = sourceConfig["FutureBinPath"].as<string>();
-        ret.StockBinPath = sourceConfig["StockBinPath"].as<string>();
         ret.UserDBPath = sourceConfig["UserDBPath"].as<string>();
         ret.AppCheckTime = sourceConfig["AppCheckTime"].as<string>();
     }
@@ -434,7 +455,6 @@ struct XWatcherConfig
     string CloseTime;
     string XServerIP;
     int XServerPort;
-    string Trader;
     string Mount1;
     string Mount2;
 };
@@ -454,7 +474,6 @@ static bool LoadXWatcherConfig(const char *yml, XWatcherConfig& ret, string& out
         ret.CloseTime = sourceConfig["CloseTime"].as<string>();
         ret.XServerIP = sourceConfig["XServerIP"].as<string>();
         ret.XServerPort = sourceConfig["XServerPort"].as<int>();
-        ret.Trader = sourceConfig["Trader"].as<string>();
         ret.Mount1 = sourceConfig["Mount1"].as<string>();
         ret.Mount2 = sourceConfig["Mount2"].as<string>();
     }
@@ -571,6 +590,7 @@ struct OrderParameter
 {
     string Account;
     string Ticker;
+    string ExchangeID;
     int OrderType;
     int Direction;
     int Offset;
@@ -590,6 +610,7 @@ static bool LoadOrderParameter(const char *yml, OrderParameter& ret, string& out
         YAML::Node sourceConfig = Config["OrderParameter"];
         ret.Account = sourceConfig["Account"].as<string>();
         ret.Ticker = sourceConfig["Ticker"].as<string>();
+        ret.ExchangeID = sourceConfig["ExchangeID"].as<string>();
         ret.OrderType = sourceConfig["OrderType"].as<int>();
         ret.Direction = sourceConfig["Direction"].as<int>();
         ret.Offset = sourceConfig["Offset"].as<int>();

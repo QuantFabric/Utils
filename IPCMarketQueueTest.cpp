@@ -3,23 +3,75 @@
 #include <sys/time.h>
 #include <time.h>
 
-struct TMarketData
+struct TFutureMarketData
 {
     char Colo[16];
+    char Broker[16];
+    char Ticker[16];
+    char ExchangeID[16];
+    int LastTick;
     int Tick;
     char UpdateTime[32];
-    char Data[4096];
+    int MillSec;
+    double LastPrice;
+    int Volume;
+    double Turnover;
+    double PreSettlementPrice;
+    double PreClosePrice;
+    double OpenInterest;
+    double OpenPrice;
+    double HighestPrice;
+    double LowestPrice;
+    double UpperLimitPrice;
+    double LowerLimitPrice;
+    double BidPrice1;
+    int BidVolume1;
+    double AskPrice1;
+    int AskVolume1;
+    double BidPrice2;
+    int BidVolume2;
+    double AskPrice2;
+    int AskVolume2;
+    double BidPrice3;
+    int BidVolume3;
+    double AskPrice3;
+    int AskVolume3;
+    double BidPrice4;
+    int BidVolume4;
+    double AskPrice4;
+    int AskVolume4;
+    double BidPrice5;
+    int BidVolume5;
+    double AskPrice5;
+    int AskVolume5;
+    int SectionFirstTick;
+    int SectionLastTick;
+    int TotalTick;
+    int ErrorID;
+    char RevDataLocalTime[32];
+    bool IsLast;
 };
 
-double getdetlatimeofday(struct timeval *begin, struct timeval *end)
+#define TICKER_COUNT 40
+
+struct TFutureMarketDataSet
+{
+    char Colo[16];
+    char ExchangeID[16];
+    int Tick;
+    TFutureMarketData MarketData[TICKER_COUNT];
+    char UpdateTime[32];
+};
+
+double getdeltatimeofday(struct timeval *begin, struct timeval *end)
 {
     return (end->tv_sec + end->tv_usec * 1.0 / 1000000) -
            (begin->tv_sec + begin->tv_usec * 1.0 / 1000000);
 }
 
-#define N (30000)
+#define N (1000000)
 
-Utils::IPCMarketQueue<TMarketData> queue(N, 0XFF0000FE);
+Utils::IPCMarketQueue<TFutureMarketDataSet> queue(N, 0XFF0000FE);
 
 
 static unsigned long getTimeUs()
@@ -33,60 +85,38 @@ void produce()
 {
     struct timeval begin, end;
     gettimeofday(&begin, NULL);
-    long count = 0;
     unsigned int tid = pthread_self();
-    for (size_t j = 0; j < 1000; j++)
+    int i = 0;
+    while(i < N)
     {
-        int i = 0;
-        TMarketData MarketData;
-        memset(&MarketData, 0, sizeof(TMarketData));
-        while(i < N)
-        {
-            MarketData.Tick = i;
-            if(queue.Write(i, MarketData))
-            {   
-                // printf("Tick %d\n", i);
-                i++;
-                count++;
-            }
-        }
+        TFutureMarketDataSet MarketData;
+        memset(&MarketData, 0, sizeof(TFutureMarketDataSet));
+        MarketData.Tick = i;
+        queue.Write(i++, MarketData);
     }
     
     gettimeofday(&end, NULL);
-    double tm = getdetlatimeofday(&begin, &end);
+    double tm = getdeltatimeofday(&begin, &end);
     printf("producer tid=%lu %.2f MB/s %.2f msg/s %.2f ns/msg elapsed= %.2f size= %u T Size: %u\n", 
-        tid, count * sizeof(TMarketData) / (tm * 1024 * 1024), count / tm, tm * 1000000000 / count, tm, count, sizeof(TMarketData));
+        tid, i * sizeof(TFutureMarketDataSet) / (tm * 1024 * 1024), i / tm, tm * 1000000000 / i, tm, i, sizeof(TFutureMarketDataSet));
 }
 
 void consume()
 {
     struct timeval begin, end;
     gettimeofday(&begin, NULL);
-    long count = 0;
     unsigned int tid = pthread_self();
-
-    for (size_t j = 0; j < 1000; j++)
+    int i = 0;
+    TFutureMarketDataSet MarketData;
+    memset(&MarketData, 0, sizeof(TFutureMarketDataSet));
+    while(i < N)
     {
-        queue.ResetTick(0);
-        int i = 0;
-        TMarketData MarketData;
-        memset(&MarketData, 0, sizeof(TMarketData));
-        while(i < N)
-        {
-            MarketData.Tick = i;
-            if(queue.Write(i, MarketData))
-            {   
-                // printf("Tick %d\n", i);
-                i++;
-                count++;
-            }
-        }
+        queue.Read(i++, MarketData);
     }
-
     gettimeofday(&end, NULL);
-    double tm = getdetlatimeofday(&begin, &end);
+    double tm = getdeltatimeofday(&begin, &end);
     printf("consumer tid=%lu %.2f MB/s %.2f msg/s %.2f ns/msg elapsed= %.2f size= %u T Size: %u\n", 
-        tid, count * sizeof(TMarketData) / (tm * 1024 * 1024), count / tm, tm * 1000000000 / count, tm, count, sizeof(TMarketData));
+        tid, i * sizeof(TFutureMarketDataSet) / (tm * 1024 * 1024), i / tm, tm * 1000000000 / i, tm, i, sizeof(TFutureMarketDataSet));
 }
 
 int main(int argc, char const *argv[])
@@ -97,6 +127,7 @@ int main(int argc, char const *argv[])
 #endif
 
 #ifdef CONSUMER
+    usleep(2000);
     std::thread consumer1(consume);
 #endif
 

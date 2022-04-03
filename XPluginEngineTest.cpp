@@ -10,3 +10,5 @@ int main(int argc, char* argv[])
     object->print();
     return 0;
 }
+
+// g++ -fPIC  XPluginEngineTest.cpp -o test -ldl

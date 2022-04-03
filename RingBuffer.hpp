@@ -14,7 +14,7 @@ template <class T>
 class RingBuffer
 {
 public:
-    RingBuffer(unsigned size, unsigned int key = 0) : m_size(size), m_front(0), m_rear(0)
+    RingBuffer(unsigned int size, unsigned int key = 0) : m_size(size), m_front(0), m_rear(0)
     {
         m_key = key;
         // 堆空间分配

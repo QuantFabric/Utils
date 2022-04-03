@@ -1,7 +1,10 @@
-#include "LockFreeQueue.hpp"
+#include <stdio.h>
 #include <thread>
+#include <unistd.h>
 #include <sys/time.h>
-#include <time.h>
+#include <string.h>
+
+#include "readerwriterqueue.h"
 
 class Test
 {
@@ -23,23 +26,15 @@ public:
    char data[760];
 };
 
+#define  N 20000000
+
 double getdeltatimeofday(struct timeval *begin, struct timeval *end)
 {
     return (end->tv_sec + end->tv_usec * 1.0 / 1000000) -
            (begin->tv_sec + begin->tv_usec * 1.0 / 1000000);
 }
 
-// multi thread in one process
-#ifdef HEAP
-Utils::LockFreeQueue<Test> queue(10 << 10);
-#endif
-
-// IPC ShareMemory
-#ifdef IPC
-Utils::LockFreeQueue<Test> queue(10 << 10, 0xFF02);
-#endif
-
-#define N (20000000)
+moodycamel::ReaderWriterQueue<Test> queue(1 << 10);  
 
 static unsigned long getTimeUs()
 {
@@ -56,13 +51,8 @@ void produce()
     unsigned int tid = pthread_self();
     while(i < N)
     {
-        if(queue.Push(Test(tid, 1)))
+        if(queue.try_enqueue(Test(tid, 1)))
 	        i++;
-        int currentTimeStamp = getTimeUs();
-        if(currentTimeStamp % 5000000 == 0)
-        {
-            printf("produce tid: %lu i= %d queue full: %d\n", tid, i, queue.IsFull());
-        }
     }
     gettimeofday(&end, NULL);
     double tm = getdeltatimeofday(&begin, &end);
@@ -79,15 +69,10 @@ void consume()
     while(i < N)
     {
         memset(&test, 0, sizeof(test));
-        if(queue.Pop(test))
+        if(queue.try_dequeue(test))
         {
             test.display();
-            i += test.value;
-        }
-        int currentTimeStamp = getTimeUs();
-        if(currentTimeStamp % 5000000 == 0)
-        {
-            printf("consume tid: %lu i= %d queue empty: %d\n", tid, i, queue.IsEmpty());
+            i++;
         }
     }
     gettimeofday(&end, NULL);
@@ -97,33 +82,22 @@ void consume()
 
 int main(int argc, char const *argv[])
 {
-    queue.Reset();
 #ifdef PRODUCER
-    std::thread producer1(produce);
-    std::thread producer2(produce);
+    std::thread producer(produce);
 #endif
-
 #ifdef CONSUMER
     usleep(2000);
-    std::thread consumer1(consume);
-    std::thread consumer2(consume);
+    std::thread consumer(consume);
 #endif
 
 #ifdef PRODUCER
-    producer1.join();
-    producer2.join();
+    producer.join();
 #endif
-
 #ifdef CONSUMER
-    consumer1.join();
-    consumer2.join();
+    consumer.join();
 #endif
 
     return 0;
 }
-// Multi Thread in one Process
-// g++ --std=c++11 -O2 -DHEAP -DPRODUCER -DCONSUMER LockFreeQueueTest.cpp -o test -lrt -pthread
-// IPC
-// g++ --std=c++11 -O2 -DIPC -DPRODUCER LockFreeQueueTest.cpp -o producer -lrt -pthread
-// g++ --std=c++11 -O2 -DIPC -DCONSUMER LockFreeQueueTest.cpp -o consumer -lrt -pthread
-// g++编译时，如果GLIBC库版本低于2.17，则clock_gettime需要使用指定-lrt选项。
+
+// g++ -O2 --std=c++11 -DPRODUCER -DCONSUMER ReaderWriterQueueTest.cpp -o test -pthread -I/home/xtrader/QuantFabric/XAPI/ConcurrentQueue/1.0.3/

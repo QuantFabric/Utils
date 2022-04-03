@@ -286,10 +286,10 @@ static int CodeConvert(char *inbuf, size_t inlen, char* outbuf, size_t outlen, c
     char **pin = &inbuf;
     char **pout = &outbuf;
     cd = iconv_open(to_charset,from_charset);
-    if (cd == 0)
+    if (cd == (iconv_t)(-1))
         return -1;
     memset(outbuf, 0, outlen);
-    if (iconv(cd,pin, &inlen, pout, &outlen) == -1)
+    if (iconv(cd,pin, &inlen, pout, &outlen) == (size_t)(-1))
         return -1;
     iconv_close(cd);
     return 0;

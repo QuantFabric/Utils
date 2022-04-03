@@ -3,6 +3,8 @@
 int main(int argc, char* argv[])
 {
     Utils::gLogger = Utils::Singleton<Utils::Logger>::GetInstance();
+    Utils::gLogger->setLogPath("./", "test");
+    Utils::gLogger->Init();
     Utils::gLogger->setDebugLevel();
     Utils::gLogger->Log->info("hello world!");
     Utils::gLogger->Log->debug("hello world!");
@@ -11,3 +13,5 @@ int main(int argc, char* argv[])
     spdlog::drop_all();
     return 0;
 }
+
+// g++ -O2 --std=c++11 LoggerTest.cpp Logger.cpp -o test -lspdlog -pthread -I/home/xtrader/QuantFabric/XAPI/SPDLog/1.8.5/include -L/home/xtrader/QuantFabric/XAPI/SPDLog/1.8.5/lib/

@@ -1,52 +1,107 @@
+#include <stdio.h>
+#include <thread>
+#include <unistd.h>
+#include <sys/time.h>
+#include <string.h>
+
 #include "concurrentqueue.h"
 
+class Test
+{
+public:
+   Test(int id = 0, int value = 0)
+   {
+	    this->id = id;
+        this->value = value;
+   }
+   void display()
+   {
+        this->value += 10;
+        this->value -= 10;
+        sprintf(data, "id = %lu, value = %d", this->id, this->value);
+   }
+public:
+   unsigned int id;
+   int value;
+   char data[760];
+};
 
-moodycamel::ConcurrentQueue<int> queue(32);
+#define N 20000000
+
+double getdeltatimeofday(struct timeval *begin, struct timeval *end)
+{
+    return (end->tv_sec + end->tv_usec * 1.0 / 1000000) -
+           (begin->tv_sec + begin->tv_usec * 1.0 / 1000000);
+}
+
+moodycamel::ConcurrentQueue<Test> queue(1 << 10);
+
+static unsigned long getTimeUs()
+{
+    struct timespec timeStamp = {0, 0};
+    clock_gettime(CLOCK_REALTIME, &timeStamp);
+    return timeStamp.tv_sec * 1e6 + timeStamp.tv_nsec/1000;
+}
 
 void produce()
 {
-    long tid = pthread_self();
-    int i = 0;
-    while (i < 1 << 20)
+    struct timeval begin, end;
+    gettimeofday(&begin, NULL);
+    unsigned int i = 0;
+    unsigned int tid = pthread_self();
+    while(i < N)
     {
-        queue.try_enqueue(i++);
+        if(queue.try_enqueue(Test(tid, 1)))
+	        i++;
     }
-    printf("tid: %ld produce done\n", tid);
+    gettimeofday(&end, NULL);
+    double tm = getdeltatimeofday(&begin, &end);
+    printf("producer tid=%lu %f MB/s %f msg/s elapsed= %f size= %u\n", tid, N * sizeof(Test) * 1.0 / (tm * 1024 * 1024), N * 1.0 / tm, tm, i);
 }
 
 void consume()
 {
-    while (true)
+    Test test;
+    struct timeval begin, end;
+    gettimeofday(&begin, NULL);
+    unsigned int i = 0;
+    unsigned int tid = pthread_self();
+    while(i < N)
     {
-        long tid = pthread_self();
-        int items[10];
-        if (queue.try_dequeue_bulk(items, 10)) 
+        memset(&test, 0, sizeof(test));
+        if(queue.try_dequeue(test))
         {
-            for (size_t k = 0; k < 10; k++)
-            {
-                printf("tid: %ld dequeue: %d\n", tid, items[k]);
-            }
+            test.display();
+            i++;
         }
     }
+    gettimeofday(&end, NULL);
+    double tm = getdeltatimeofday(&begin, &end);
+    printf("consumer tid=%lu %f MB/s %f msg/s elapsed= %f size= %u\n", tid, N * sizeof(Test) * 1.0 / (tm * 1024 * 1024), N * 1.0 / tm, tm, i);
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char const *argv[])
 {
-    
-    int dequeued[100] = {0};
-    std::thread threads[6];
-    // Producers
-    for (int i = 0; i < 4; ++i) {
-        threads[i] = std::thread(produce);
-    }
-    // Consumers
-    for (int i = 4; i < 6; ++i) {
-        threads[i] = std::thread(consume);
-    }
-    // Wait for all threads
-    for (int i = 0; i < 6; ++i) {
-        threads[i].join();
-    }
+#ifdef PRODUCER
+    std::thread producer1(produce);
+    std::thread producer2(produce);
+#endif
+#ifdef CONSUMER
+    usleep(2000);
+    std::thread consumer1(consume);
+    std::thread consumer2(consume);
+#endif
+
+#ifdef PRODUCER
+    producer1.join();
+    producer2.join();
+#endif
+#ifdef CONSUMER
+    consumer1.join();
+    consumer2.join();
+#endif
 
     return 0;
 }
+
+// g++ --std=c++11 -O2 -DPRODUCER -DCONSUMER ConcurrentQueueTest.cpp -o test -lrt -pthread -I/home/xtrader/QuantFabric/XAPI/ConcurrentQueue/1.0.3/
