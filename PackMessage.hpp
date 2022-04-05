@@ -15,7 +15,7 @@ namespace Message
 #define MESSAGE_COLOSTATUS             "ColoStatus"
 #define MESSAGE_APPSTATUS              "AppStatus"
 #define MESSAGE_RISKREPORT             "RiskReport"
-#define MESSAGE_LOGINRESPONSE          "LoginResponse"
+#define MESSAGE_LIST                   "FutureMarket|StockMarket|OrderStatus|AccountFund|AccountPosition|EventLog|ColoStatus|AppStatus|RiskReport"
 
 #define PLUGIN_MARKET            "Market"
 #define PLUGIN_ORDERMANAGER      "OrderManager"
