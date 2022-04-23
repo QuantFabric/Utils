@@ -382,8 +382,8 @@ struct XRiskJudgeConfig
     int ServerPort;
     string RiskID;
     string RiskDBPath;
-    string XServerIP;
-    int XServerPort;
+    string XWatcherIP;
+    int XWatcherPort;
 };
 
 static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string& out)
@@ -398,8 +398,8 @@ static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string&
         ret.ServerPort = sourceConfig["ServerPort"].as<int>();
         ret.RiskID = sourceConfig["RiskID"].as<string>();
         ret.RiskDBPath = sourceConfig["RiskDBPath"].as<string>();
-        ret.XServerIP = sourceConfig["XServerIP"].as<string>();
-        ret.XServerPort = sourceConfig["XServerPort"].as<int>();
+        ret.XWatcherIP = sourceConfig["XWatcherIP"].as<string>();
+        ret.XWatcherPort = sourceConfig["XWatcherPort"].as<int>();
     }
     catch(YAML::Exception& e)
     {
