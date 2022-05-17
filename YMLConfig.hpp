@@ -237,7 +237,7 @@ struct XTraderConfig
     string CloseTime;
     unsigned int TraderTimeOut;
     bool QryFund;
-    bool QryPosition;
+    bool CancelAll;
     string TickerListPath;
     string ErrorPath;
     string RiskServerIP;
@@ -271,7 +271,7 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.CloseTime = sourceConfig["CloseTime"].as<string>();
         ret.TraderTimeOut = sourceConfig["TraderTimeOut"].as<unsigned int>();
         ret.QryFund = sourceConfig["QryFund"].as<bool>();
-        ret.QryPosition = sourceConfig["QryPosition"].as<bool>();
+        ret.CancelAll = sourceConfig["CancelAll"].as<bool>();
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
         ret.ErrorPath = sourceConfig["ErrorPath"].as<string>();
         ret.RiskServerIP = sourceConfig["RiskServerIP"].as<string>();

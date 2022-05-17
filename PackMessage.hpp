@@ -47,7 +47,8 @@ enum EClientType
     EXMARKETCENTER = 3,
     EXRISKJUDGE = 4,
     EXWATCHER = 5, 
-    EXQUANT = 6
+    EXQUANT = 6,
+    EFASTTRADER = 7,
 };
 
 struct TLoginRequest
@@ -220,7 +221,18 @@ enum EOrderSide
     ECLOSE_TD_SHORT = 5,
     ECLOSE_YD_SHORT = 6,
     ECLOSE_LONG = 7,
-    ECLOSE_SHORT = 8
+    ECLOSE_SHORT = 8,
+    ESIDE_REVERSE_REPO = 9, // 国债逆回购申购
+    ESIDE_SUBSCRIPTION = 10, // 新股、新债申购
+    ESIDE_ALLOTMENT = 11, // 配股配债认购
+    ESIDE_COLLATERAL_TRANSFER_IN = 12, // 担保品转入
+    ESIDE_COLLATERAL_TRANSFER_OUT = 13, // 担保品转出
+    ESIDE_MARGIN_BUY = 14, // 融资买入
+    ESIDE_REPAY_MARGIN_BY_SELL = 15, // 卖券还款
+    ESIDE_SHORT_SELL = 16, // 融券卖出
+    ESIDE_REPAY_STOCK_BY_BUY = 17, // 买券还券
+    ESIDE_REPAY_STOCK_DIRECT = 18, // 现券还券
+
 };
 
 struct TOrderStatus
