@@ -313,17 +313,18 @@ struct TFuturePosition
 
 struct TStockPosition
 {
-    int LongYdPosition; // 现货昨仓
-    int LongPosition; // 现货持仓
-    int LongTdBuy; // 现货今日买入量
-    int LongTdSell; // 现货今日卖出量
-    int LongTdSell4RePay; // 卖券还款数量
-    int ShortYdPosition; // 融券昨仓
-    int ShortPosition; // 融券持仓
-    int TdBuy4RePay; // 买券还券数量
-    int TdDirectRepay; // 现券还券数量
-    int MarginPosition; // 融券头寸
-    int reserved;
+    int LongYdPosition; // 日初可用持仓
+    int LongPosition; // 当前总持仓
+    int LongTdBuy; // 今日买入量
+    int LongTdSell; // 今日卖出量
+    int MarginYdPosition; // 日初融资负债数量 (不包括日初已还)
+    int MarginPosition; // 融资负债数量;
+    int MarginRepaid; // 当日已归还融资数量 (对应于合约开仓价格的理论上的已归还融资数量)
+    int ShortYdPosition; // 日初融券负债可用数量 (不包括日初已还)
+    int ShortPosition; // 融券负债数量 (不包括已还)
+    int ShortSellRepaid; // 当日已归还融券数量 (日中发生的归还数量, 不包括日初已还)
+    int RepayDirectAvl; // 直接还券可用持仓数量;
+    int SpecialPositionAvl; // 融券专项证券头寸可用数量
 };
 
 struct TAccountPosition
