@@ -14,7 +14,7 @@ struct TFutureMarketData
 {
     char Colo[16];
     char Broker[16];
-    char Ticker[16];
+    char Ticker[20]; // 商品组合合约长度可能大于16字节
     char ExchangeID[16];
     int LastTick;
     int Tick;
@@ -59,6 +59,8 @@ struct TFutureMarketData
     bool IsLast;
 };
 
+typedef TFutureMarketData TSpotMarketData;
+
 #define TICKER_COUNT 40
 
 struct TFutureMarketDataSet
@@ -74,7 +76,7 @@ struct TStockMarketData
 {
     char Colo[16];
     char Broker[16];
-    char Ticker[16];
+    char Ticker[20];
     char ExchangeID[16];
     int LastTick;
     int Tick;

@@ -8,6 +8,7 @@ namespace Message
 
 #define MESSAGE_FUTUREMARKET           "FutureMarket"
 #define MESSAGE_STOCKMARKET            "StockMarket"
+#define MESSAGE_SPOTMARKET             "SpotMarket"
 #define MESSAGE_ORDERSTATUS            "OrderStatus"
 #define MESSAGE_ACCOUNTFUND            "AccountFund"
 #define MESSAGE_ACCOUNTPOSITION        "AccountPosition"
@@ -15,7 +16,7 @@ namespace Message
 #define MESSAGE_COLOSTATUS             "ColoStatus"
 #define MESSAGE_APPSTATUS              "AppStatus"
 #define MESSAGE_RISKREPORT             "RiskReport"
-#define MESSAGE_LIST                   "FutureMarket|StockMarket|OrderStatus|AccountFund|AccountPosition|EventLog|ColoStatus|AppStatus|RiskReport"
+#define MESSAGE_LIST                   "FutureMarket|StockMarket|SpotMarket|OrderStatus|AccountFund|AccountPosition|EventLog|ColoStatus|AppStatus|RiskReport"
 
 #define PLUGIN_MARKET            "Market"
 #define PLUGIN_ORDERMANAGER      "OrderManager"
@@ -156,7 +157,7 @@ struct TOrderRequest
     char Broker[16];
     char Product[16];
     char Account[16];
-    char Ticker[16];
+    char Ticker[20];
     char ExchangeID[16];
     uint8_t BussinessType;
     uint8_t OrderType;
@@ -241,7 +242,7 @@ struct TOrderStatus
     char Broker[16];
     char Product[16];
     char Account[16];
-    char Ticker[16];
+    char Ticker[20];
     char ExchangeID[16];
     uint8_t BussinessType;
     char OrderRef[32];
@@ -333,7 +334,7 @@ struct TAccountPosition
     char Broker[16];
     char Product[16];
     char Account[16];
-    char Ticker[16];
+    char Ticker[20];
     char ExchangeID[16];
     uint8_t BussinessType;
     union
@@ -377,7 +378,7 @@ struct TEventLog
     char Broker[16];
     char Product[16];
     char Account[16];
-    char Ticker[16];
+    char Ticker[20];
     char ExchangeID[16];
     char App[32];
     char Event[400];
@@ -421,7 +422,7 @@ struct TRiskReport
     char Broker[16];
     char Product[16];
     char Account[16];
-    char Ticker[16];
+    char Ticker[20];
     char ExchangeID[16];
     uint8_t BussinessType;
     //  RiskLimitTable
@@ -522,6 +523,7 @@ enum EMessageType
     EAppStatus = 0XFF0C,
     EFutureMarketData = 0XFFB1,
     EStockMarketData = 0XFFB2,
+    ESpotMarketData = 0XFFB3,
 };
 
 struct PackMessage
@@ -544,6 +546,7 @@ struct PackMessage
         TAppStatus AppStatus;                           // 0XFF0C
         MarketData::TFutureMarketData FutureMarketData; // 0XFFB1
         MarketData::TStockMarketData StockMarketData;   // 0XFFB2
+        MarketData::TSpotMarketData SpotMarketData;     // 0XFFB1
     };
 };
 
