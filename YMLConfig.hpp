@@ -94,7 +94,7 @@ struct RawMarketSourceConfig
     string Device;
 };
 
-static bool LoadRawMarkeSourceConfig(const char *yml, RawMarketSourceConfig& ret, string& out)
+static bool LoadRawMarketSourceConfig(const char *yml, RawMarketSourceConfig& ret, string& out)
 {
     bool ok = true;
     try
@@ -210,6 +210,7 @@ struct TickerProperty
     int Index;
     string Ticker;
     string ExchangeID;
+    double PriceTick;
 };
 
 static bool LoadTickerList(const char *yml, std::vector<TickerProperty>& ret, string& out)
@@ -228,6 +229,7 @@ static bool LoadTickerList(const char *yml, std::vector<TickerProperty>& ret, st
             item.Index = property["TickerIndex"].as<int>();
             item.Ticker = property["Ticker"].as<string>();
             item.ExchangeID = property["ExchangeID"].as<string>();
+            item.PriceTick = property["PriceTick"].as<double>();
             ret.push_back(item);
         }
         
