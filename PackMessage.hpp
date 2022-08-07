@@ -49,7 +49,8 @@ enum EClientType
     EXRISKJUDGE = 4,
     EXWATCHER = 5, 
     EXQUANT = 6,
-    EFASTTRADER = 7,
+    EHFTRADER = 7,
+    EXDATAPLAYER = 8,
 };
 
 struct TLoginRequest

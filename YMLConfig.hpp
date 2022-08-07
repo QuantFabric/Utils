@@ -46,6 +46,102 @@ static bool LoadCTPMarkeSourceConfig(const char *yml, CTPMarketSourceConfig& ret
     return ok;
 }
 
+struct REMMarketSourceConfig
+{
+    string Account;
+    string Password;
+    string FrontIP;
+    unsigned int FrontPort;
+    string MultiCastIP;
+    unsigned int MultiCastPort;
+    string LocalIP;
+    unsigned int LocalPort;
+    string TickerListPath;
+
+};
+
+static bool LoadREMMarkeSourceConfig(const char *yml, REMMarketSourceConfig& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        YAML::Node config = YAML::LoadFile(yml);
+        YAML::Node remSourceConfig = config["REMMarketSource"];
+        ret.Account = remSourceConfig["Account"].as<string>();
+        ret.Password = remSourceConfig["Password"].as<string>();
+        ret.FrontIP = remSourceConfig["FrontIP"].as<string>();
+        ret.FrontPort = remSourceConfig["FrontPort"].as<unsigned int>();
+        ret.MultiCastIP = remSourceConfig["MultiCastIP"].as<string>();
+        ret.MultiCastPort = remSourceConfig["MultiCastPort"].as<unsigned int>();
+        ret.LocalIP = remSourceConfig["LocalIP"].as<string>();
+        ret.LocalPort = remSourceConfig["LocalPort"].as<unsigned int>();
+        ret.TickerListPath = remSourceConfig["TickerListPath"].as<string>();
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
+struct RawMarketSourceConfig
+{
+    string Source;
+    string BinPath;
+    string TickerListPath;
+    string Device;
+};
+
+static bool LoadRawMarkeSourceConfig(const char *yml, RawMarketSourceConfig& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        YAML::Node config = YAML::LoadFile(yml);
+        YAML::Node remSourceConfig = config["RawMarketSource"];
+        ret.Source = remSourceConfig["Source"].as<string>();
+        ret.BinPath = remSourceConfig["BinPath"].as<string>();
+        ret.TickerListPath = remSourceConfig["TickerListPath"].as<string>();
+        ret.Device = remSourceConfig["Device"].as<string>();
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
+struct CrawlerMarketSourceConfig
+{
+    string Source;
+    int TimeOut;
+    string Script;
+};
+
+static bool LoadCrawlerMarkeSourceConfig(const char *yml, CrawlerMarketSourceConfig& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        YAML::Node config = YAML::LoadFile(yml);
+        YAML::Node SourceConfig = config["CrawlerMarketSource"];
+        ret.Source = SourceConfig["Source"].as<string>();
+        ret.TimeOut = SourceConfig["TimeOut"].as<int>();
+        ret.Script = SourceConfig["Script"].as<string>();
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
 typedef std::pair<std::string, std::string> TradingPeriod;
 typedef std::pair<int, int> IntTradingPeriod;
 
@@ -53,8 +149,9 @@ struct MarketCenterConfig
 {
     string ServerIP;
     int Port;
-    string Source;
+    string ExchangeID;
     bool ToMonitor;
+    bool Future;
     unsigned int TotalTick;
     unsigned int MarketChannelKey;
     unsigned int RecvTimeOut;
@@ -62,6 +159,7 @@ struct MarketCenterConfig
     std::vector<TradingPeriod> ContinuousAuctionPeriod;
     std::vector<IntTradingPeriod> IntContinuousAuctionPeriod;
     string TickerListPath;
+    string APIConfig;
 };
 
 static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, string& out)
@@ -74,8 +172,9 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         YAML::Node sourceConfig = config["MarketCenterConfig"];
         ret.ServerIP = sourceConfig["ServerIP"].as<string>();
         ret.Port = sourceConfig["Port"].as<int>();
-        ret.Source = sourceConfig["Source"].as<string>();
+        ret.ExchangeID = sourceConfig["ExchangeID"].as<string>();
         ret.ToMonitor = sourceConfig["ToMonitor"].as<bool>();
+        ret.Future = sourceConfig["Future"].as<bool>();
         ret.TotalTick = sourceConfig["TotalTick"].as<unsigned int>();
         ret.MarketChannelKey = sourceConfig["MarketChannelKey"].as<unsigned int>();
         ret.RecvTimeOut = sourceConfig["RecvTimeOut"].as<unsigned int>();
@@ -96,6 +195,7 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
             ret.IntContinuousAuctionPeriod.push_back(int_period);
         }
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
+        ret.APIConfig = sourceConfig["APIConfig"].as<string>();
     }
     catch(YAML::Exception& e)
     {
@@ -647,6 +747,49 @@ static bool LoadXMonitorConfig(const char *yml, XMonitorConfig& ret, string& out
         ret.XServerPort = sourceConfig["XServerPort"].as<int>();
         ret.UserName = sourceConfig["UserName"].as<string>();
         ret.PassWord = sourceConfig["PassWord"].as<string>();
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
+struct XDataPlayerConfig
+{
+    string ServerIP;
+    int Port;
+    int TotalTick;
+    unsigned int MarketChannelKey;
+    int CPUID;
+    string TickerListPath;
+    bool BackTest;
+    string MarketDataPath;
+    int IntervalMS;
+    string BeginDay;
+    string EndDay;
+};
+
+static bool LoadXDataPlayerConfig(const char *yml, XDataPlayerConfig& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        YAML::Node config = YAML::LoadFile(yml);
+        YAML::Node sourceConfig = config["XDataPlayerConfig"];
+        ret.ServerIP = sourceConfig["ServerIP"].as<string>();
+        ret.Port = sourceConfig["Port"].as<int>();
+        ret.TotalTick = sourceConfig["TotalTick"].as<int>();
+        ret.MarketChannelKey = sourceConfig["MarketChannelKey"].as<unsigned int>();
+        ret.CPUID = sourceConfig["CPUID"].as<int>();
+        ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
+        ret.BackTest = sourceConfig["BackTest"].as<bool>();
+        ret.MarketDataPath = sourceConfig["MarketDataPath"].as<string>();
+        ret.IntervalMS = sourceConfig["IntervalMS"].as<int>();
+        ret.BeginDay = sourceConfig["BeginDay"].as<string>();
+        ret.EndDay = sourceConfig["EndDay"].as<string>();
     }
     catch(YAML::Exception& e)
     {

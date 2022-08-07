@@ -3,8 +3,10 @@
 #define UTIL_HPP
 
 #include <string>
+#include <chrono>
 #include <ctime>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
@@ -14,11 +16,13 @@
 #include <thread>
 #include <vector>
 #include <string.h>
+#include <dirent.h>
+#include <algorithm>
 #include <unordered_map>
 #include <map>
 #include <mutex>
 #include <iconv.h>
-#include <algorithm>
+#include<pthread.h>
 
 namespace Utils
 {
@@ -293,6 +297,62 @@ static int CodeConvert(char *inbuf, size_t inlen, char* outbuf, size_t outlen, c
         return -1;
     iconv_close(cd);
     return 0;
+}
+
+static bool ThreadBind(pthread_t thread, int cpuid)
+{
+    cpu_set_t mask;
+    CPU_ZERO(&mask);
+    CPU_SET(cpuid, &mask);
+    return pthread_setaffinity_np(thread, sizeof(mask), &mask) == 0;
+}
+
+static bool ReadDirectory(const std::string& path, std::vector<std::string>& ret)
+{
+    ret.clear();
+    bool ok = true;
+    struct dirent* ptr;
+    DIR* dir = opendir(path.c_str());
+    if(dir != NULL)
+    {
+        while((ptr = readdir(dir)) != NULL)
+        {
+            if(DT_REG == ptr->d_type)
+            {
+                ret.push_back(ptr->d_name);
+            }
+        }
+        std::sort(ret.begin(), ret.end());
+    }
+    else
+    {
+        ok = false;
+    }
+    closedir(dir);
+    return ok;
+}
+
+static bool ReadFile(const std::string& path, std::vector<std::string>& ret)
+{
+    ret.clear();
+    bool ok = true;
+    FILE* fp = fopen(path.c_str(), "r");
+    if (NULL != fp)
+    {
+        char *line = NULL;
+        size_t len = 0;
+        ssize_t read;
+        while ((read = getline(&line, &len, fp)) != -1)
+        {
+            ret.push_back(line);
+        }
+        free(line);
+    }
+    else
+    {
+        ok = false;
+    }
+    return ok;
 }
 
 }

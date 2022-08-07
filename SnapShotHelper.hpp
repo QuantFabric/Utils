@@ -46,7 +46,7 @@ public:
 
     static int WriteData(const std::string& binPath, const T& data)
     {
-        static int fd = open(binPath.c_str(), O_CREAT | O_RDWR | O_APPEND, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+        static int fd = open(binPath.c_str(), O_CREAT | O_TRUNC | O_RDWR | O_APPEND, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
         int n = write(fd, &data, sizeof(data));
         // close(fd);
         return n;

@@ -26,10 +26,6 @@ public:
             {
                 WriteMarketDataFile(dataset.MarketData[i]);
             }
-            else
-            {
-                break;
-            }
         }
     }
     void WriteMarketData(const MarketData::TFutureMarketData &data)
