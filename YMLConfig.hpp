@@ -160,6 +160,7 @@ struct MarketCenterConfig
     std::vector<IntTradingPeriod> IntContinuousAuctionPeriod;
     string TickerListPath;
     string APIConfig;
+    string CPUSET;
 };
 
 static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, string& out)
@@ -196,6 +197,7 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         }
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
         ret.APIConfig = sourceConfig["APIConfig"].as<string>();
+        ret.CPUSET = sourceConfig["CPUSET"].as<string>();
     }
     catch(YAML::Exception& e)
     {
@@ -348,6 +350,7 @@ struct XTraderConfig
     string TraderAPIConfig;
     unsigned int OrderChannelKey;
     unsigned int ReportChannelKey;
+    string CPUSET;
 };
 
 static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
@@ -382,6 +385,7 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.TraderAPIConfig = sourceConfig["TraderAPIConfig"].as<string>();
         ret.OrderChannelKey = sourceConfig["OrderChannelKey"].as<unsigned int>();
         ret.ReportChannelKey = sourceConfig["ReportChannelKey"].as<unsigned int>();
+        ret.CPUSET = sourceConfig["CPUSET"].as<string>();
     }
     catch(YAML::Exception& e)
     {
@@ -486,6 +490,7 @@ struct XRiskJudgeConfig
     string RiskDBPath;
     string XWatcherIP;
     int XWatcherPort;
+    string CPUSET;
 };
 
 static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string& out)
@@ -502,6 +507,7 @@ static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string&
         ret.RiskDBPath = sourceConfig["RiskDBPath"].as<string>();
         ret.XWatcherIP = sourceConfig["XWatcherIP"].as<string>();
         ret.XWatcherPort = sourceConfig["XWatcherPort"].as<int>();
+        ret.CPUSET = sourceConfig["CPUSET"].as<string>();
     }
     catch(YAML::Exception& e)
     {

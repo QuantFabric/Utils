@@ -272,7 +272,10 @@ static void Split(const std::string &src, const std::string &delimiter, std::vec
         }
         else
         {
-            str += src[i];
+            if(src[i] != ' ')
+            {
+                str += src[i];
+            }
         }
     }
     value.push_back(str);
