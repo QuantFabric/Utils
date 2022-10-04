@@ -331,6 +331,7 @@ struct XTraderConfig
     string BrokerID;
     string Account;
     int BussinessType;
+    bool CloseToday;
     string Password;
     string AppID;
     string AuthCode;
@@ -364,8 +365,9 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.Product = sourceConfig["Product"].as<string>();
         ret.Broker = sourceConfig["Broker"].as<string>();
         ret.BrokerID = sourceConfig["BrokerID"].as<string>();
-        ret.Account = sourceConfig["Account"].as<string>();
         ret.BussinessType = sourceConfig["BussinessType"].as<int>();
+        ret.CloseToday = sourceConfig["CloseToday"].as<bool>();
+         ret.Account = sourceConfig["Account"].as<string>();
         ret.Password = sourceConfig["Password"].as<string>();
         ret.AppID = sourceConfig["AppID"].as<string>();
         ret.AuthCode = sourceConfig["AuthCode"].as<string>();
