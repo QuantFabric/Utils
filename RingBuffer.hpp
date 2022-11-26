@@ -7,6 +7,20 @@
 #include <string.h>
 #include <stdio.h>
 
+// Branch Prediction
+#ifndef likely
+#define likely(x)    __builtin_expect(!!(x), 1)
+#endif
+
+#ifndef unlikely
+#define unlikely(x)  __builtin_expect(!!(x), 0)
+#endif
+
+// Forced inline
+#ifndef force_inline
+#define force_inline __attribute__ ((__always_inline__))
+#endif
+
 namespace Utils
 {
 
@@ -14,119 +28,127 @@ template <class T>
 class RingBuffer
 {
 public:
-    RingBuffer(unsigned int size = 1000, unsigned int key = 0) : m_size(size), m_front(0), m_rear(0)
+    RingBuffer(unsigned int size = 1024, unsigned int key = 0) : m_QueueSize(size), m_Head(0), m_Tail(0)
     {
-        m_key = key;
+        m_QueueSize = RoundPower2(size);
+        m_QueueKey = key;
         // 堆空间分配
-        if (0 == m_key)
+        if (0 == m_QueueKey)
         {
-            m_data = new T[size];
-            m_front = new int(0);
-            m_rear = new int(0);
+            m_Buffer = new T[m_QueueSize];
+            m_Head = new int(0);
+            m_Tail = new int(0);
         }
         else // 共享内存分配
         {
-            int shmid = shmget(m_key, size * sizeof(T) + sizeof(int) * 2, 0666 | IPC_CREAT);
-            m_data = static_cast<T *>(shmat(shmid, 0, 0));
-            m_front = (int *)(m_data + m_size);
-            m_rear = (int *)((m_data + m_size) + sizeof(int));
+            int shmid = shmget(m_QueueKey, m_QueueSize * sizeof(T) + sizeof(int) * 2, 0666 | IPC_CREAT);
+            m_Buffer = static_cast<T *>(shmat(shmid, 0, 0));
+            m_Head = (int *)(m_Buffer + m_QueueSize);
+            m_Tail = (int *)((m_Buffer + m_QueueSize) + sizeof(int));
         }
     }
 
     ~RingBuffer()
     {
-        if (0 == m_key)
+        if (0 == m_QueueKey)
         {
-            delete[] m_data;
-            delete m_front;
-            delete m_rear;
+            delete[] m_Buffer;
+            delete m_Head;
+            delete m_Tail;
         }
         else
         {
-            shmdt((void *)m_data);
+            shmdt((void *)m_Buffer);
         }
 
-        m_data = NULL;
-        m_front = NULL;
-        m_rear = NULL;
+        m_Buffer = NULL;
+        m_Head = NULL;
+        m_Tail = NULL;
     }
 
-    inline void reset()
+    force_inline inline void Reset()
     {
-        if (0 == m_key)
+        if (0 == m_QueueKey)
         {
-            memset(m_data, 0, m_size * sizeof(T));
-            *m_front = 0;
-            *m_rear = 0;
+            memset(m_Buffer, 0, m_QueueSize * sizeof(T));
+            *m_Head = 0;
+            *m_Tail = 0;
         }
         else
         {
-            memset(m_data, 0, m_size * sizeof(T) + sizeof(int) * 2);
+            memset(m_Buffer, 0, m_QueueSize * sizeof(T) + sizeof(int) * 2);
         }
     }
 
-    inline bool isEmpty() const
+    force_inline inline bool IsEmpty() const
     {
-        return *m_front == *m_rear;
+        return *m_Head == *m_Tail;
     }
 
-    inline bool isFull() const
+    force_inline inline bool IsFull() const
     {
-        return *m_front == (*m_rear + 1) % m_size;
+        return *m_Head == ((*m_Tail + 1) & (m_QueueSize - 1));
     }
 
-    bool push(const T& value)
+    force_inline bool Push(const T& value)
     {
-        if (isFull())
+        if(unlikely(IsFull()))
         {
             return false;
         }
-        m_data[*m_rear] = value;
-        *m_rear = (*m_rear + 1) % m_size;
+        m_Buffer[*m_Tail] = value;
+        *m_Tail = (*m_Tail + 1) & (m_QueueSize - 1);
         return true;
     }
 
-    bool push(const T *value)
+    force_inline bool Push(const T *value)
     {
-        if (isFull())
+        if(unlikely(IsFull()))
         {
             return false;
         }
-        m_data[*m_rear] = *value;
-        *m_rear = (*m_rear + 1) % m_size;
+        m_Buffer[*m_Tail] = *value;
+        *m_Tail = (*m_Tail + 1) & (m_QueueSize - 1);
         return true;
     }
 
-    inline bool pop(T &value)
+    force_inline inline bool Pop(T &value)
     {
-        if (isEmpty())
+        if (unlikely(IsEmpty()))
         {
             return false;
         }
-        value = m_data[*m_front];
-        *m_front = (*m_front + 1) % m_size;
+        value = m_Buffer[*m_Head];
+        *m_Head = (*m_Head + 1) & (m_QueueSize - 1);
         return true;
     }
-    inline unsigned int front() const
+    
+    force_inline inline unsigned int Head() const
     {
-        return *m_front;
+        return *m_Head;
     }
 
-    inline unsigned int rear() const
+    force_inline inline unsigned int Tail() const
     {
-        return *m_rear;
+        return *m_Tail;
     }
-    inline unsigned int size() const
+    force_inline inline unsigned int Size() const
     {
-        return m_size;
+        return m_QueueSize;
     }
-
+protected:
+    static uint32_t RoundPower2(uint32_t size) 
+    {
+        uint32_t i;
+        for ( i = 0; (1U << i) < size; i++);
+        return 1U << i;
+    }
 private:
-    unsigned int m_size; // 队列长度
-    int *m_front;        // 队列头部索引
-    int *m_rear;         // 队列尾部索引
-    T *m_data;           // 数据缓冲区
-    int m_key;
+    alignas(128) unsigned int m_QueueSize; // 队列长度
+    alignas(128) int *m_Head;        // 队列头部索引
+    alignas(128) int *m_Tail;         // 队列尾部索引
+    T *m_Buffer;           // 数据缓冲区
+    int m_QueueKey;
 };
 
 }

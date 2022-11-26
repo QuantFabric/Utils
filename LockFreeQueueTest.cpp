@@ -31,12 +31,12 @@ double getdeltatimeofday(struct timeval *begin, struct timeval *end)
 
 // multi thread in one process
 #ifdef HEAP
-Utils::LockFreeQueue<Test> queue(10 << 10);
+Utils::LockFreeQueue<Test> queue(1 << 10);
 #endif
 
 // IPC ShareMemory
 #ifdef IPC
-Utils::LockFreeQueue<Test> queue(10 << 10, 0xFF02);
+Utils::LockFreeQueue<Test> queue(1 << 10, 0xFF02);
 #endif
 
 #define N (20000000)
@@ -56,13 +56,13 @@ void produce()
     unsigned int tid = pthread_self();
     while(i < N)
     {
-        if(queue.Push(Test(tid, 1)))
+        if(queue.Push(Test(i, i)))
 	        i++;
-        int currentTimeStamp = getTimeUs();
-        if(currentTimeStamp % 5000000 == 0)
-        {
-            printf("produce tid: %lu i= %d queue full: %d\n", tid, i, queue.IsFull());
-        }
+        // int currentTimeStamp = getTimeUs();
+        // if(currentTimeStamp % 5000000 == 0)
+        // {
+        //     printf("produce tid: %lu i= %d queue full: %d\n", tid, i, queue.IsFull());
+        // }
     }
     gettimeofday(&end, NULL);
     double tm = getdeltatimeofday(&begin, &end);
@@ -76,19 +76,17 @@ void consume()
     gettimeofday(&begin, NULL);
     unsigned int i = 0;
     unsigned int tid = pthread_self();
-    while(i < N)
+    while(i < N * 2)
     {
-        memset(&test, 0, sizeof(test));
         if(queue.Pop(test))
         {
-            test.display();
-            i += test.value;
+            i += 1;
         }
-        int currentTimeStamp = getTimeUs();
-        if(currentTimeStamp % 5000000 == 0)
-        {
-            printf("consume tid: %lu i= %d queue empty: %d\n", tid, i, queue.IsEmpty());
-        }
+        // int currentTimeStamp = getTimeUs();
+        // if(currentTimeStamp % 5000000 == 0)
+        // {
+        //     printf("consume tid: %lu i= %d queue empty: %d\n", tid, i, queue.IsEmpty());
+        // }
     }
     gettimeofday(&end, NULL);
     double tm = getdeltatimeofday(&begin, &end);
@@ -106,7 +104,7 @@ int main(int argc, char const *argv[])
 #ifdef CONSUMER
     usleep(2000);
     std::thread consumer1(consume);
-    std::thread consumer2(consume);
+    // std::thread consumer2(consume);
 #endif
 
 #ifdef PRODUCER
@@ -116,7 +114,7 @@ int main(int argc, char const *argv[])
 
 #ifdef CONSUMER
     consumer1.join();
-    consumer2.join();
+    // consumer2.join();
 #endif
 
     return 0;

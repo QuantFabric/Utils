@@ -10,8 +10,10 @@
 #include <unordered_map>
 #include <unistd.h>
 #include "Logger.h"
-#include "concurrentqueue.h"
+#include "LockFreeQueue.hpp"
 #include "PackMessage.hpp"
+#include "phmap.h"
+#include <shared_mutex>
 
 struct Connection
 {
@@ -41,9 +43,13 @@ protected:
     static En_HP_HandleResult __stdcall OnClose(HP_Server pSender, HP_CONNID dwConnID, En_HP_SocketOperation enOperation, int iErrorCode);
     static En_HP_HandleResult __stdcall OnShutdown(HP_Server pSender);
 public:
-    static moodycamel::ConcurrentQueue<Message::PackMessage> m_PackMessageQueue;
-    static std::unordered_map<HP_CONNID, Connection> m_sConnections;
-    static std::unordered_map<HP_CONNID, Connection> m_newConnections;
+    static Utils::LockFreeQueue<Message::PackMessage> m_PackMessageQueue;
+    typedef phmap::parallel_flat_hash_map<HP_CONNID, Connection, phmap::priv::hash_default_hash<HP_CONNID>,
+                                     phmap::priv::hash_default_eq<HP_CONNID>,
+                                     std::allocator<std::pair<const HP_CONNID, Connection>>, 8, std::shared_mutex>
+    ConnectionMapT;
+    static ConnectionMapT m_sConnections;
+    static ConnectionMapT m_newConnections;
 private:
     std::string m_ServerIP;
     unsigned int m_ServerPort;

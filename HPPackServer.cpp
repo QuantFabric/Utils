@@ -2,9 +2,9 @@
 
 extern Utils::Logger *gLogger;
 
-std::unordered_map<HP_CONNID, Connection> HPPackServer::m_sConnections;
-std::unordered_map<HP_CONNID, Connection> HPPackServer::m_newConnections;
-moodycamel::ConcurrentQueue<Message::PackMessage> HPPackServer::m_PackMessageQueue(1 << 10);
+HPPackServer::ConnectionMapT HPPackServer::m_sConnections;
+HPPackServer::ConnectionMapT HPPackServer::m_newConnections;
+Utils::LockFreeQueue<Message::PackMessage> HPPackServer::m_PackMessageQueue(1 << 10);
 
 HPPackServer::HPPackServer(const char *ip, unsigned int port)
 {
@@ -88,8 +88,6 @@ En_HP_HandleResult __stdcall HPPackServer::OnAccept(HP_Server pSender, HP_CONNID
     int iAddressLen = sizeof(szAddress) / sizeof(TCHAR);
     USHORT usPort;
     ::HP_Server_GetRemoteAddress(pSender, dwConnID, szAddress, &iAddressLen, &usPort);
-    std::mutex mtx;
-    mtx.lock();
     Connection connection;
     connection.dwConnID = dwConnID;
     connection.pSender = pSender;
@@ -99,7 +97,6 @@ En_HP_HandleResult __stdcall HPPackServer::OnAccept(HP_Server pSender, HP_CONNID
         m_sConnections.insert(std::pair<HP_CONNID, Connection>(dwConnID, connection));
         m_newConnections.insert(std::pair<HP_CONNID, Connection>(dwConnID, connection));
     }
-    mtx.unlock();
     char errorString[512] = {0};
     sprintf(errorString, "HPPackServer::OnAccept accept an new connection dwConnID:%d from %s:%d",  dwConnID, szAddress, usPort);
     Utils::gLogger->Log->info(errorString);
@@ -122,7 +119,7 @@ En_HP_HandleResult __stdcall HPPackServer::OnReceive(HP_Server pSender, HP_CONNI
     char messageType[32] = {0};
     sprintf(messageType, "0X%X", message.MessageType);
     Utils::gLogger->Log->info("HPPackServer::OnReceive receive PackMessage, MessageType:{}", messageType);
-    m_PackMessageQueue.enqueue(message);
+    while(!m_PackMessageQueue.Push(message));
     return HR_OK;
 }
 
@@ -133,8 +130,6 @@ En_HP_HandleResult __stdcall HPPackServer::OnClose(HP_Server pSender, HP_CONNID 
     USHORT usPort;
     ::HP_Server_GetRemoteAddress(pSender, dwConnID, szAddress, &iAddressLen, &usPort);
 
-    std::mutex mtx;
-    mtx.lock();
     auto it = m_sConnections.find(dwConnID);
     if (it != m_sConnections.end())
     {
@@ -145,7 +140,6 @@ En_HP_HandleResult __stdcall HPPackServer::OnClose(HP_Server pSender, HP_CONNID 
     {
         m_newConnections.erase(dwConnID);
     }
-    mtx.unlock();
     char errorString[512] = {0};
     sprintf(errorString, "HPPackServer::OnClose have an connection dwConnID:%d from %s:%d closed",  dwConnID, szAddress, usPort);
     Utils::gLogger->Log->warn(errorString);

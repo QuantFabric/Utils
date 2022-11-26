@@ -104,6 +104,7 @@ enum EBusinessType
     ESTOCK = 1,
     ECREDIT = 2,
     EFUTURE = 3,
+    ESPOT = 4,
 };
 
 enum EOrderType

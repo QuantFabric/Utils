@@ -14,7 +14,7 @@ int main()
     while (true)
     {
         Message::PackMessage message;
-        bool ret = Server.m_PackMessageQueue.try_dequeue(message);
+        bool ret = Server.m_PackMessageQueue.Pop(message);
         if(ret)
         {
             char buffer[256] = {0};

@@ -150,6 +150,7 @@ struct MarketCenterConfig
     string ServerIP;
     int Port;
     string ExchangeID;
+    unsigned int  BussinessType;
     bool ToMonitor;
     bool Future;
     unsigned int TotalTick;
@@ -174,6 +175,7 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         ret.ServerIP = sourceConfig["ServerIP"].as<string>();
         ret.Port = sourceConfig["Port"].as<int>();
         ret.ExchangeID = sourceConfig["ExchangeID"].as<string>();
+        ret.BussinessType = sourceConfig["BussinessType"].as<unsigned int>();
         ret.ToMonitor = sourceConfig["ToMonitor"].as<bool>();
         ret.Future = sourceConfig["Future"].as<bool>();
         ret.TotalTick = sourceConfig["TotalTick"].as<unsigned int>();
@@ -340,7 +342,6 @@ struct XTraderConfig
     int Port;
     string OpenTime;
     string CloseTime;
-    unsigned int TraderTimeOut;
     bool QryFund;
     bool CancelAll;
     string TickerListPath;
@@ -371,12 +372,10 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.Password = sourceConfig["Password"].as<string>();
         ret.AppID = sourceConfig["AppID"].as<string>();
         ret.AuthCode = sourceConfig["AuthCode"].as<string>();
-        ret.Colo = sourceConfig["Colo"].as<string>();
         ret.ServerIP = sourceConfig["ServerIP"].as<string>();
         ret.Port = sourceConfig["Port"].as<int>();
         ret.OpenTime = sourceConfig["OpenTime"].as<string>();
         ret.CloseTime = sourceConfig["CloseTime"].as<string>();
-        ret.TraderTimeOut = sourceConfig["TraderTimeOut"].as<unsigned int>();
         ret.QryFund = sourceConfig["QryFund"].as<bool>();
         ret.CancelAll = sourceConfig["CancelAll"].as<bool>();
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
@@ -529,6 +528,7 @@ struct XServerConfig
     string BinPath;
     string UserDBPath;
     string AppCheckTime;
+    string AppStatusStoreTime;
 };
 
 static bool LoadXServerConfig(const char *yml, XServerConfig& ret, string& out)
@@ -547,6 +547,7 @@ static bool LoadXServerConfig(const char *yml, XServerConfig& ret, string& out)
         ret.BinPath = sourceConfig["BinPath"].as<string>();
         ret.UserDBPath = sourceConfig["UserDBPath"].as<string>();
         ret.AppCheckTime = sourceConfig["AppCheckTime"].as<string>();
+        ret.AppStatusStoreTime = sourceConfig["AppStatusStoreTime"].as<string>();
     }
     catch(YAML::Exception& e)
     {

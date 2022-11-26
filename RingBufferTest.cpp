@@ -47,13 +47,13 @@ double getdeltatimeofday(struct timeval *begin, struct timeval *end)
 // 
 void produce()
 {
-    queue.reset();
+    queue.Reset();
     struct timeval begin, end;
     gettimeofday(&begin, NULL);
     unsigned int i = 0;
     while(i < N)
     {
-        if(queue.push(Test(i >> 10, i)))
+        if(queue.Push(Test(i, i)))
         {
 	        i++;
         }
@@ -72,9 +72,9 @@ void consume()
     unsigned int i = 0;
     while(i < N)
     {
-        if(queue.pop(test))
+        if(queue.Pop(test))
         {
-           test.display();
+        //    test.display();
            i++;
         }
     }
