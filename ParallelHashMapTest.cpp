@@ -40,7 +40,7 @@ void produce()
         #endif
         memcpy(OrderStatus.OrderRef, OrderRef, sizeof(OrderStatus.OrderRef));
         printf("produce OrderRef:%s\n", OrderRef);
-        if(OrderRefQueue.push(OrderRef))
+        if(OrderRefQueue.Push(OrderRef))
         {
             i++;
         }
@@ -53,7 +53,7 @@ void consume()
     while(true)
     {
         std::string OrderRef;
-        if(OrderRefQueue.pop(OrderRef))
+        if(OrderRefQueue.Pop(OrderRef))
         {
             #ifndef PHMAP
             std::mutex mtx;
