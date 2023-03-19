@@ -153,6 +153,12 @@ enum EEngineType
     ETRADER_ORDER = 0XAF01,
 };
 
+enum StrategyEngine
+{
+    ELATENCYTEST = 0XFF00,
+    EPORTFOLIO   = 0XFF01,
+};
+
 struct TOrderRequest
 {
     char Colo[16];
@@ -213,6 +219,7 @@ enum EOrderStatus
     ERISK_ORDER_REJECTED = 12,
     ERISK_ACTION_REJECTED = 13,
     ERISK_CHECK_INIT = 14,
+    ERISK_CHECK_SELFMATCH = 15,
 };
 
 enum EOrderSide
@@ -275,6 +282,37 @@ struct TOrderStatus
     int ErrorID;
     char ErrorMsg[256];
     char UpdateTime[32];
+};
+
+struct TFastOrder
+{
+    char Account[16];
+    char Ticker[32];
+    char ExchangeID[16];
+    uint32_t OrderRef;
+    uint32_t OrderSysID;
+    uint32_t OrderLocalID;
+    uint32_t OrderToken;
+    uint32_t EngineID;
+    uint8_t OrderType;
+    uint8_t Direction;
+    uint8_t Offset;
+    uint8_t OrderStatus;
+    double SendPrice;
+    uint32_t SendVolume;
+    uint32_t TotalTradedVolume;
+    uint32_t TradedVolume;
+    double TradedAvgPrice;
+    double TradedPrice;
+    uint32_t CanceledVolume;
+    uint64_t RecvMarketTime;
+    uint64_t SendTime;
+    uint64_t InsertTime;
+    uint64_t BrokerACKTime;
+    uint64_t ExchangeACKTime;
+    uint64_t OrderTradedTime;
+    uint32_t ErrorID;
+    char ErrorMsg[128];
 };
 
 struct TAccountFund
@@ -523,6 +561,7 @@ enum EMessageType
     ERiskReport = 0XFF0A,
     EColoStatus = 0XFF0B,
     EAppStatus = 0XFF0C,
+    EFastOrder = 0XFF0D,
     EFutureMarketData = 0XFFB1,
     EStockMarketData = 0XFFB2,
     ESpotMarketData = 0XFFB3,
@@ -546,6 +585,7 @@ struct PackMessage
         TRiskReport RiskReport;                         // 0XFF0A
         TColoStatus ColoStatus;                         // 0XFF0B
         TAppStatus AppStatus;                           // 0XFF0C
+        TFastOrder FastOrder;                           // 0XFF0D
         MarketData::TFutureMarketData FutureMarketData; // 0XFFB1
         MarketData::TStockMarketData StockMarketData;   // 0XFFB2
         MarketData::TSpotMarketData SpotMarketData;     // 0XFFB1

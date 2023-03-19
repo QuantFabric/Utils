@@ -10,6 +10,9 @@
 namespace MarketData
 {
 
+#define TICKER_LEN 20
+#define TICKER_COUNT 20
+
 struct TFutureMarketData
 {
     char Colo[16];
