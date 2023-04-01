@@ -220,6 +220,7 @@ enum EOrderStatus
     ERISK_ACTION_REJECTED = 13,
     ERISK_CHECK_INIT = 14,
     ERISK_CHECK_SELFMATCH = 15,
+    ERISK_CHECK_CANCELLIMIT = 16,
 };
 
 enum EOrderSide
@@ -298,6 +299,7 @@ struct TFastOrder
     uint8_t Direction;
     uint8_t Offset;
     uint8_t OrderStatus;
+    uint32_t RiskStatus;
     double SendPrice;
     uint32_t SendVolume;
     uint32_t TotalTradedVolume;
@@ -311,6 +313,7 @@ struct TFastOrder
     uint64_t BrokerACKTime;
     uint64_t ExchangeACKTime;
     uint64_t OrderTradedTime;
+    uint64_t UpdateTime;
     uint32_t ErrorID;
     char ErrorMsg[128];
 };
