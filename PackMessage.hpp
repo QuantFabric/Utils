@@ -30,7 +30,7 @@ namespace Message
 struct TTest
 {
    char Account[16];
-   char Content[256]; 
+   char Content[800]; 
 };
 
 enum ELoginStatus
@@ -61,8 +61,8 @@ struct TLoginRequest
     char PassWord[16];
     char Operation[16];
     char Role[16];
-    char Plugins[320];
-    char Messages[160];
+    char Plugins[400];
+    char Messages[400];
     char UUID[32];
 };
 
@@ -81,8 +81,8 @@ struct TLoginResponse
     char Account[16];
     char PassWord[16];
     char Role[16];
-    char Plugins[320];
-    char Messages[160];
+    char Plugins[400];
+    char Messages[400];
     char UpdateTime[32];
     int ErrorID;
     char ErrorMsg[64];
