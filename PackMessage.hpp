@@ -236,8 +236,8 @@ enum EOrderSide
     ESIDE_REVERSE_REPO = 9, // 国债逆回购申购
     ESIDE_SUBSCRIPTION = 10, // 新股、新债申购
     ESIDE_ALLOTMENT = 11, // 配股配债认购
-    ESIDE_COLLATERAL_TRANSFER_IN = 12, // 担保品转入
-    ESIDE_COLLATERAL_TRANSFER_OUT = 13, // 担保品转出
+    ESIDE_COLLATERAL_BUY = 12, // 担保品买入
+    ESIDE_COLLATERAL_SELL = 13, // 担保品卖出
     ESIDE_MARGIN_BUY = 14, // 融资买入
     ESIDE_REPAY_MARGIN_BY_SELL = 15, // 卖券还款
     ESIDE_SHORT_SELL = 16, // 融券卖出
@@ -290,10 +290,10 @@ struct TFastOrder
     char Account[16];
     char Ticker[32];
     char ExchangeID[16];
-    uint32_t OrderRef;
-    uint32_t OrderSysID;
-    uint32_t OrderLocalID;
-    uint32_t OrderToken;
+    uint64_t OrderRef;
+    uint64_t OrderSysID;
+    uint64_t OrderLocalID;
+    uint64_t OrderToken;
     uint32_t EngineID;
     uint8_t OrderType;
     uint8_t Direction;
@@ -316,6 +316,8 @@ struct TFastOrder
     uint64_t UpdateTime;
     uint32_t ErrorID;
     char ErrorMsg[128];
+    char SOrderLocalID[32];
+    char SOrderSysID[32];
 };
 
 struct TAccountFund
@@ -361,13 +363,15 @@ struct TStockPosition
     int LongPosition; // 当前总持仓
     int LongTdBuy; // 今日买入量
     int LongTdSell; // 今日卖出量
-    int MarginYdPosition; // 日初融资负债数量 (不包括日初已还)
+    int MarginYdPosition; // 日初可用融资负债数量 
     int MarginPosition; // 融资负债数量;
-    int MarginRepaid; // 当日已归还融资数量 (对应于合约开仓价格的理论上的已归还融资数量)
-    int ShortYdPosition; // 日初融券负债可用数量 (不包括日初已还)
-    int ShortPosition; // 融券负债数量 (不包括已还)
-    int ShortSellRepaid; // 当日已归还融券数量 (日中发生的归还数量, 不包括日初已还)
-    int RepayDirectAvl; // 直接还券可用持仓数量;
+    int MarginTdBuy; // 融资今日买入数量
+    int MarginTdSell; // 今日卖券还款数量
+    int ShortYdPosition; // 日初融券负债可用数量 
+    int ShortPosition; // 融券负债数量
+    int ShortTdSell; // 今日融券卖出数量
+    int ShortTdBuy; // 今日买券还券数量
+    int ShortDirectRepaid; // 直接还券数量
     int SpecialPositionAvl; // 融券专项证券头寸可用数量
 };
 
