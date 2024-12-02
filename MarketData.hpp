@@ -21,6 +21,8 @@ struct TFutureMarketData
     char ExchangeID[16];
     int LastTick;
     int Tick;
+    char TradingDay[16];
+    char ActionDay[16];
     char UpdateTime[32];
     int MillSec;
     double LastPrice;
