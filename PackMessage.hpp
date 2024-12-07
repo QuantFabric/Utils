@@ -597,6 +597,8 @@ struct PackMessage
         MarketData::TStockMarketData StockMarketData;   // 0XFFB2
         MarketData::TSpotMarketData SpotMarketData;     // 0XFFB1
     };
+    int ChannelID;
+    long long TimeStamp;
 };
 
 }
