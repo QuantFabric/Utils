@@ -149,19 +149,19 @@ struct MarketCenterConfig
 {
     string ServerIP;
     int Port;
+    std::vector<int> CPU_List;
     string ExchangeID;
     unsigned int  BussinessType;
     bool ToMonitor;
     bool Future;
     unsigned int TotalTick;
-    unsigned int MarketChannelKey;
+    string MarketServer;
     unsigned int RecvTimeOut;
     std::string CallAuctionPeriod;
     std::vector<TradingPeriod> ContinuousAuctionPeriod;
     std::vector<IntTradingPeriod> IntContinuousAuctionPeriod;
     string TickerListPath;
     string APIConfig;
-    string CPUSET;
 };
 
 static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, string& out)
@@ -179,7 +179,7 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         ret.ToMonitor = sourceConfig["ToMonitor"].as<bool>();
         ret.Future = sourceConfig["Future"].as<bool>();
         ret.TotalTick = sourceConfig["TotalTick"].as<unsigned int>();
-        ret.MarketChannelKey = sourceConfig["MarketChannelKey"].as<unsigned int>();
+        ret.MarketServer = sourceConfig["MarketServer"].as<string>();
         ret.RecvTimeOut = sourceConfig["RecvTimeOut"].as<unsigned int>();
         ret.CallAuctionPeriod = sourceConfig["CallAuctionPeriod"].as<string>();
         YAML::Node con_period = sourceConfig["ContinuousAuctionPeriod"];
@@ -199,7 +199,6 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         }
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
         ret.APIConfig = sourceConfig["APIConfig"].as<string>();
-        ret.CPUSET = sourceConfig["CPUSET"].as<string>();
     }
     catch(YAML::Exception& e)
     {
@@ -346,12 +345,10 @@ struct XTraderConfig
     bool CancelAll;
     string TickerListPath;
     string ErrorPath;
-    string RiskServerIP;
-    int RiskServerPort;
+    string RiskServerName;
+    string QuantServerName;
     string TraderAPI;
     string TraderAPIConfig;
-    unsigned int OrderChannelKey;
-    unsigned int ReportChannelKey;
     string CPUSET;
 };
 
@@ -380,13 +377,10 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.CancelAll = sourceConfig["CancelAll"].as<bool>();
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
         ret.ErrorPath = sourceConfig["ErrorPath"].as<string>();
-        ret.RiskServerIP = sourceConfig["RiskServerIP"].as<string>();
-        ret.RiskServerPort = sourceConfig["RiskServerPort"].as<int>();
+        ret.RiskServerName = sourceConfig["RiskServerName"].as<string>();
+        ret.QuantServerName = sourceConfig["QuantServerName"].as<string>();
         ret.TraderAPI = sourceConfig["TraderAPI"].as<string>();
         ret.TraderAPIConfig = sourceConfig["TraderAPIConfig"].as<string>();
-        ret.OrderChannelKey = sourceConfig["OrderChannelKey"].as<unsigned int>();
-        ret.ReportChannelKey = sourceConfig["ReportChannelKey"].as<unsigned int>();
-        ret.CPUSET = sourceConfig["CPUSET"].as<string>();
     }
     catch(YAML::Exception& e)
     {
@@ -485,13 +479,11 @@ static bool LoadYDConfig(const char *yml, YDConfig& ret, string& out)
 
 struct XRiskJudgeConfig
 {
-    string ServerIP;
-    int ServerPort;
+    string RiskServerName;
     string RiskID;
     string RiskDBPath;
     string XWatcherIP;
     int XWatcherPort;
-    string CPUSET;
 };
 
 static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string& out)
@@ -502,13 +494,11 @@ static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string&
         out.clear();
         YAML::Node config = YAML::LoadFile(yml);
         YAML::Node sourceConfig = config["XRiskJudgeConfig"];
-        ret.ServerIP = sourceConfig["ServerIP"].as<string>();
-        ret.ServerPort = sourceConfig["ServerPort"].as<int>();
+        ret.RiskServerName = sourceConfig["RiskServerName"].as<string>();
         ret.RiskID = sourceConfig["RiskID"].as<string>();
         ret.RiskDBPath = sourceConfig["RiskDBPath"].as<string>();
         ret.XWatcherIP = sourceConfig["XWatcherIP"].as<string>();
         ret.XWatcherPort = sourceConfig["XWatcherPort"].as<int>();
-        ret.CPUSET = sourceConfig["CPUSET"].as<string>();
     }
     catch(YAML::Exception& e)
     {

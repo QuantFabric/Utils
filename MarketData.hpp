@@ -60,8 +60,7 @@ struct TFutureMarketData
     int SectionLastTick;
     int TotalTick;
     int ErrorID;
-    char RevDataLocalTime[32];
-    bool IsLast;
+    char RecvLocalTime[32];
 };
 
 typedef TFutureMarketData TSpotMarketData;
@@ -103,8 +102,7 @@ struct TStockMarketData
     double AskPrice[10];
     int AskVolume[10];
     int ErrorID;
-    char RevDataLocalTime[32];
-    bool IsLast;
+    char RecvLocalTime[32];
 };
 
 static void Check(TFutureMarketData& data)
@@ -128,7 +126,7 @@ static void Check(TFutureMarketData& data)
         {
             time1 = std::string(data.UpdateTime + 11) + ".000000";
         }
-        std::string time2 = std::string(data.RevDataLocalTime + 11) + ".000000";
+        std::string time2 = std::string(data.RecvLocalTime + 11) + ".000000";
         if (abs(Utils::TimeDiffUs(time1, time2)) >= 120 * 1e6)
         {
             ErrorID = 2;

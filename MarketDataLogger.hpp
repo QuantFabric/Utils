@@ -35,11 +35,11 @@ public:
 
     void WriteMarketDataFile(const MarketData::TFutureMarketData &data)
     {
-        m_MarketDataLogger->info("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
+        m_MarketDataLogger->info("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
             data.LastTick,
             data.Ticker,
             data.ExchangeID,
-            data.RevDataLocalTime,
+            data.RecvLocalTime,
             data.Tick,
             data.SectionFirstTick,
             data.SectionLastTick,
@@ -77,8 +77,7 @@ public:
             data.BidVolume5,
             data.AskPrice5,
             data.AskVolume5,
-            data.ErrorID,
-            data.IsLast);
+            data.ErrorID);
     }
 
     void FormatMarketDataHeader(const std::string& delimiter, std::string& out)
@@ -87,7 +86,7 @@ public:
             "LastTick" + delimiter +
             "Ticker" + delimiter +
             "ExchangeID" + delimiter +
-            "RevDataLocalTime" + delimiter +
+            "RecvLocalTime" + delimiter +
             "Tick" + delimiter +
             "SectionFirstTick" + delimiter +
             "SectionLastTick" + delimiter +
@@ -125,8 +124,7 @@ public:
             "BidVolume5" + delimiter +
             "AskPrice5" + delimiter +
             "AskVolume5" + delimiter +
-            "ErrorID" + delimiter +
-            "IsLast";
+            "ErrorID";
         out = field;
     }
 
