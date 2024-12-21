@@ -28,14 +28,20 @@ struct TFutureMarketData
     double LastPrice;
     int Volume;
     double Turnover;
-    double PreSettlementPrice;
-    double PreClosePrice;
-    double OpenInterest;
     double OpenPrice;
+    double ClosePrice;
+    double PreClosePrice;
+    double SettlementPrice;
+    double PreSettlementPrice;
+    double OpenInterest;
+    double PreOpenInterest;
+    double CurrDelta;
+    double PreDelta;
     double HighestPrice;
     double LowestPrice;
     double UpperLimitPrice;
     double LowerLimitPrice;
+    double AveragePrice;
     double BidPrice1;
     int BidVolume1;
     double AskPrice1;
@@ -109,7 +115,7 @@ static void Check(TFutureMarketData& data)
 {
     int ErrorID = 0;
     // rule 1
-    if (!((data.BidPrice1 < 1e7 && data.BidPrice1 > 0) || (data.AskPrice1 > 0 && data.AskPrice1 < 1e7)))
+    if (!((data.BidPrice1 < 1e10 && data.BidPrice1 > 0) || (data.AskPrice1 > 0 && data.AskPrice1 < 1e10)))
     {
         ErrorID = 1;
     }
@@ -132,76 +138,105 @@ static void Check(TFutureMarketData& data)
             ErrorID = 2;
         }
     }
+
     data.ErrorID = ErrorID;
-    if(data.LastPrice > 1e7)
+    if(data.LastPrice > 1e10)
     {
         data.LastPrice = 0;
     }
-    if(data.PreSettlementPrice > 1e7)
-    {
-        data.PreSettlementPrice = 0;
-    }
-    if(data.PreClosePrice > 1e7)
-    {
-        data.PreClosePrice = 0;
-    }
-    if(data.OpenPrice > 1e7)
+    if(data.OpenPrice > 1e10)
     {
         data.OpenPrice = 0;
     }
-    if(data.HighestPrice > 1e7)
+    if(data.SettlementPrice > 1e10)
+    {
+        data.SettlementPrice = 0;
+    }
+    if(data.PreSettlementPrice > 1e10)
+    {
+        data.PreSettlementPrice = 0;
+    }
+    if(data.ClosePrice > 1e10)
+    {
+        data.ClosePrice = 0;
+    }
+    if(data.PreClosePrice > 1e10)
+    {
+        data.PreClosePrice = 0;
+    }
+    if(data.OpenInterest > 1e10)
+    {
+        data.OpenInterest = 0;
+    }
+    if(data.PreOpenInterest > 1e10)
+    {
+        data.PreOpenInterest = 0;
+    }
+    if(data.CurrDelta > 1e10)
+    {
+        data.CurrDelta = 0;
+    }
+    if(data.PreDelta > 1e10)
+    {
+        data.PreDelta = 0;
+    }
+    if(data.HighestPrice > 1e10)
     {
         data.HighestPrice = 0;
     }
-    if(data.LowestPrice > 1e7)
+    if(data.LowestPrice > 1e10)
     {
         data.LowestPrice = 0;
     }
-    if(data.UpperLimitPrice > 1e7)
+    if(data.UpperLimitPrice > 1e10)
     {
         data.UpperLimitPrice = 0;
     }
-    if(data.LowerLimitPrice > 1e7)
+    if(data.LowerLimitPrice > 1e10)
     {
         data.LowerLimitPrice = 0;
     }
-    if(data.BidPrice1 > 1e7)
+    if(data.AveragePrice > 1e10)
+    {
+        data.AveragePrice = 0;
+    }
+    if(data.BidPrice1 > 1e10)
     {
         data.BidPrice1 = 0;
     }
-    if(data.BidPrice2 > 1e7)
+    if(data.BidPrice2 > 1e10)
     {
         data.BidPrice2 = 0;
     }
-    if(data.BidPrice3 > 1e7)
+    if(data.BidPrice3 > 1e10)
     {
         data.BidPrice3 = 0;
     }
-    if(data.BidPrice4 > 1e7)
+    if(data.BidPrice4 > 1e10)
     {
         data.BidPrice4 = 0;
     }
-    if(data.BidPrice5 > 1e7)
+    if(data.BidPrice5 > 1e10)
     {
         data.BidPrice5 = 0;
     }
-    if(data.AskPrice1 > 1e7)
+    if(data.AskPrice1 > 1e10)
     {
         data.AskPrice1 = 0;
     }
-    if(data.AskPrice2 > 1e7)
+    if(data.AskPrice2 > 1e10)
     {
         data.AskPrice2 = 0;
     }
-    if(data.AskPrice3 > 1e7)
+    if(data.AskPrice3 > 1e10)
     {
         data.AskPrice3 = 0;
     }
-    if(data.AskPrice4 > 1e7)
+    if(data.AskPrice4 > 1e10)
     {
         data.AskPrice4 = 0;
     }
-    if(data.AskPrice5 > 1e7)
+    if(data.AskPrice5 > 1e10)
     {
         data.AskPrice5 = 0;
     }
