@@ -151,7 +151,7 @@ struct MarketCenterConfig
     int Port;
     std::vector<int> CPU_List;
     string ExchangeID;
-    unsigned int  BussinessType;
+    unsigned int  BusinessType;
     bool ToMonitor;
     bool Future;
     unsigned int TotalTick;
@@ -175,7 +175,7 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         ret.ServerIP = sourceConfig["ServerIP"].as<string>();
         ret.Port = sourceConfig["Port"].as<int>();
         ret.ExchangeID = sourceConfig["ExchangeID"].as<string>();
-        ret.BussinessType = sourceConfig["BussinessType"].as<unsigned int>();
+        ret.BusinessType = sourceConfig["BusinessType"].as<unsigned int>();
         ret.ToMonitor = sourceConfig["ToMonitor"].as<bool>();
         ret.Future = sourceConfig["Future"].as<bool>();
         ret.TotalTick = sourceConfig["TotalTick"].as<unsigned int>();
@@ -331,7 +331,7 @@ struct XTraderConfig
     string Broker;
     string BrokerID;
     string Account;
-    int BussinessType;
+    int BusinessType;
     bool CloseToday;
     string Password;
     string AppID;
@@ -363,7 +363,7 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.Product = sourceConfig["Product"].as<string>();
         ret.Broker = sourceConfig["Broker"].as<string>();
         ret.BrokerID = sourceConfig["BrokerID"].as<string>();
-        ret.BussinessType = sourceConfig["BussinessType"].as<int>();
+        ret.BusinessType = sourceConfig["BusinessType"].as<int>();
         ret.CloseToday = sourceConfig["CloseToday"].as<bool>();
          ret.Account = sourceConfig["Account"].as<string>();
         ret.Password = sourceConfig["Password"].as<string>();

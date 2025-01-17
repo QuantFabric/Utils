@@ -167,7 +167,7 @@ struct TOrderRequest
     char Account[16];
     char Ticker[20];
     char ExchangeID[16];
-    uint8_t BussinessType;
+    uint8_t BusinessType;
     uint8_t OrderType;
     uint8_t Direction;
     uint8_t Offset;
@@ -193,7 +193,7 @@ struct TActionRequest
     char Account[16];
     char OrderRef[32];
     char ExchangeID[16];
-    uint8_t BussinessType;
+    uint8_t BusinessType;
     int EngineID;
     uint8_t RiskStatus;
     char Trader[16];
@@ -203,7 +203,7 @@ struct TActionRequest
     char UpdateTime[32];
 };
 
-enum EOrderStatus
+enum EOrderStatusType
 {
     EORDER_SENDED = 1,
     EBROKER_ACK = 2,
@@ -254,7 +254,7 @@ struct TOrderStatus
     char Account[16];
     char Ticker[20];
     char ExchangeID[16];
-    uint8_t BussinessType;
+    uint8_t BusinessType;
     char OrderRef[32];
     char OrderSysID[32];
     char OrderLocalID[32];
@@ -326,7 +326,7 @@ struct TAccountFund
     char Broker[16];
     char Product[16];
     char Account[16];
-    uint8_t BussinessType;
+    uint8_t BusinessType;
     double Deposit; // 入金
     double Withdraw; // 出金
     double CurrMargin; // 当前保证金
@@ -383,7 +383,7 @@ struct TAccountPosition
     char Account[16];
     char Ticker[20];
     char ExchangeID[16];
-    uint8_t BussinessType;
+    uint8_t BusinessType;
     union
     {
         TFuturePosition FuturePosition;
@@ -471,7 +471,7 @@ struct TRiskReport
     char Account[16];
     char Ticker[20];
     char ExchangeID[16];
-    uint8_t BussinessType;
+    uint8_t BusinessType;
     //  RiskLimitTable
     int FlowLimit;
     int TickerCancelLimit;
