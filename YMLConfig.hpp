@@ -149,7 +149,6 @@ struct MarketCenterConfig
 {
     string ServerIP;
     int Port;
-    std::vector<int> CPU_List;
     string ExchangeID;
     unsigned int  BusinessType;
     bool ToMonitor;
