@@ -345,7 +345,7 @@ struct XTraderConfig
     string TickerListPath;
     string ErrorPath;
     string RiskServerName;
-    string QuantServerName;
+    string OrderServerName;
     string TraderAPI;
     string TraderAPIConfig;
     string CPUSET;
@@ -377,7 +377,7 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
         ret.ErrorPath = sourceConfig["ErrorPath"].as<string>();
         ret.RiskServerName = sourceConfig["RiskServerName"].as<string>();
-        ret.QuantServerName = sourceConfig["QuantServerName"].as<string>();
+        ret.OrderServerName = sourceConfig["OrderServerName"].as<string>();
         ret.TraderAPI = sourceConfig["TraderAPI"].as<string>();
         ret.TraderAPIConfig = sourceConfig["TraderAPIConfig"].as<string>();
     }
@@ -760,9 +760,7 @@ struct XDataPlayerConfig
 {
     string ServerIP;
     int Port;
-    int TotalTick;
-    unsigned int MarketChannelKey;
-    int CPUID;
+    string MarketServer;
     string TickerListPath;
     bool BackTest;
     string MarketDataPath;
@@ -781,9 +779,7 @@ static bool LoadXDataPlayerConfig(const char *yml, XDataPlayerConfig& ret, strin
         YAML::Node sourceConfig = config["XDataPlayerConfig"];
         ret.ServerIP = sourceConfig["ServerIP"].as<string>();
         ret.Port = sourceConfig["Port"].as<int>();
-        ret.TotalTick = sourceConfig["TotalTick"].as<int>();
-        ret.MarketChannelKey = sourceConfig["MarketChannelKey"].as<unsigned int>();
-        ret.CPUID = sourceConfig["CPUID"].as<int>();
+        ret.MarketServer = sourceConfig["MarketServer"].as<string>();
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
         ret.BackTest = sourceConfig["BackTest"].as<bool>();
         ret.MarketDataPath = sourceConfig["MarketDataPath"].as<string>();
