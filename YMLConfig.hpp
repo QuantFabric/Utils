@@ -733,6 +733,7 @@ struct XMonitorConfig
     int XServerPort;
     string UserName;
     string PassWord;
+    string StrategyPropertyPath;
 };
 
 static bool LoadXMonitorConfig(const char *yml, XMonitorConfig& ret, string& out)
@@ -747,6 +748,7 @@ static bool LoadXMonitorConfig(const char *yml, XMonitorConfig& ret, string& out
         ret.XServerPort = sourceConfig["XServerPort"].as<int>();
         ret.UserName = sourceConfig["UserName"].as<string>();
         ret.PassWord = sourceConfig["PassWord"].as<string>();
+        ret.StrategyPropertyPath = sourceConfig["StrategyPropertyPath"].as<string>();
     }
     catch(YAML::Exception& e)
     {
@@ -786,6 +788,32 @@ static bool LoadXDataPlayerConfig(const char *yml, XDataPlayerConfig& ret, strin
         ret.IntervalMS = sourceConfig["IntervalMS"].as<int>();
         ret.BeginDay = sourceConfig["BeginDay"].as<string>();
         ret.EndDay = sourceConfig["EndDay"].as<string>();
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
+
+static bool LoadStrategyProperty(const char *yml, unordered_map<int, string>& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        ret.clear();
+        YAML::Node Config = YAML::LoadFile(yml);
+        YAML::Node errorConfig = Config["StrategyList"];
+        for (int i = 0; i < errorConfig.size(); ++i)
+        {
+            YAML::Node error = errorConfig[i];
+            int code = error["EngineID"].as<int>();
+            std::string strategy = error["Strategy"].as<string>();
+            ret[code] = strategy;
+        }
     }
     catch(YAML::Exception& e)
     {

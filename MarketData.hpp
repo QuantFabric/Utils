@@ -11,7 +11,6 @@ namespace MarketData
 {
 
 #define TICKER_LEN 20
-#define TICKER_COUNT 20
 
 struct TFutureMarketData
 {
@@ -70,17 +69,6 @@ struct TFutureMarketData
 };
 
 typedef TFutureMarketData TSpotMarketData;
-
-#define TICKER_COUNT 40
-
-struct TFutureMarketDataSet
-{
-    char Colo[16];
-    char ExchangeID[16];
-    int Tick;
-    MarketData::TFutureMarketData MarketData[TICKER_COUNT];
-    char UpdateTime[32];
-};
 
 struct TStockMarketData
 {

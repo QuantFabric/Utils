@@ -23,9 +23,11 @@ namespace Message
 #define PLUGIN_EVENTLOG          "EventLog"
 #define PLUGIN_MONITOR           "Monitor"
 #define PLUGIN_RISKJUDGE         "RiskJudge"
+#define PLUGIN_FUTUREANALYSIS    "FutureAnalysis"
+#define PLUGIN_STOCKANALYSIS     "StockAnalysis"
 #define PLUGIN_PERMISSION        "Permission"
 
-#define PLUGIN_LIST             "Market|OrderManager|EventLog|Monitor|RiskJudge|Permission"
+#define PLUGIN_LIST             "Market|OrderManager|EventLog|Monitor|RiskJudge|FutureAnalysis|StockAnalysis|Permission"
 
 struct TTest
 {
@@ -150,7 +152,7 @@ enum ERiskStatusType
 
 enum EEngineType
 {
-    ETRADER_ORDER = 0XAF01,
+    ETRADER_ORDER = 1,
 };
 
 enum StrategyEngine
