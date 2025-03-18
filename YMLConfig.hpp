@@ -823,6 +823,45 @@ static bool LoadStrategyProperty(const char *yml, unordered_map<int, string>& re
     return ok;
 }
 
+
+struct XQuantConfig
+{
+    string XWatcherIP;
+    int XWatcherPort;
+    string StrategyName;
+    int StrategyID;
+    std::vector<std::string> AccountList;
+    string TickerListPath;
+    string MarketServerName;
+    string OrderServerName;
+};
+
+static bool LoadXQuantConfig(const char *yml, XQuantConfig& ret, string& out)
+{
+    bool ok = true;
+    try
+    {
+        out.clear();
+        YAML::Node config = YAML::LoadFile(yml);
+        YAML::Node sourceConfig = config["XQuantConfig"];
+        ret.XWatcherIP = sourceConfig["XWatcherIP"].as<string>();
+        ret.XWatcherPort = sourceConfig["XWatcherPort"].as<int>();
+        ret.StrategyName = sourceConfig["StrategyName"].as<string>();
+        ret.StrategyID = sourceConfig["StrategyID"].as<int>();
+        std::string Accounts = sourceConfig["AccountList"].as<string>();
+        Utils::Split(Accounts, ",", ret.AccountList);
+        ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
+        ret.MarketServerName = sourceConfig["MarketServerName"].as<string>();
+        ret.OrderServerName = sourceConfig["OrderServerName"].as<string>();
+    }
+    catch(YAML::Exception& e)
+    {
+        out = e.what();
+        ok = false;
+    }
+    return ok;
+}
+
 }
 
 #endif // YMLCONFIG_HPP
