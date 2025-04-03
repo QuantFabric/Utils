@@ -155,6 +155,7 @@ struct MarketCenterConfig
     bool Future;
     unsigned int TotalTick;
     string MarketServer;
+    std::vector<int> CPUSET;
     unsigned int RecvTimeOut;
     std::string CallAuctionPeriod;
     std::vector<TradingPeriod> ContinuousAuctionPeriod;
@@ -179,6 +180,14 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         ret.Future = sourceConfig["Future"].as<bool>();
         ret.TotalTick = sourceConfig["TotalTick"].as<unsigned int>();
         ret.MarketServer = sourceConfig["MarketServer"].as<string>();
+        std::string strCPU = sourceConfig["CPUSET"].as<string>();
+        ret.CPUSET.clear();
+        std::vector<std::string> vec;
+        Split(strCPU, ",", vec);
+        for(int i = 0; i < vec.size(); i++)
+        {
+            ret.CPUSET.push_back(atoi(vec.at(i).c_str()));
+        }
         ret.RecvTimeOut = sourceConfig["RecvTimeOut"].as<unsigned int>();
         ret.CallAuctionPeriod = sourceConfig["CallAuctionPeriod"].as<string>();
         YAML::Node con_period = sourceConfig["ContinuousAuctionPeriod"];
@@ -342,13 +351,13 @@ struct XTraderConfig
     string CloseTime;
     bool QryFund;
     bool CancelAll;
+    std::vector<int> CPUSET;
     string TickerListPath;
     string ErrorPath;
     string RiskServerName;
     string OrderServerName;
     string TraderAPI;
     string TraderAPIConfig;
-    string CPUSET;
 };
 
 static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
@@ -374,6 +383,14 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.CloseTime = sourceConfig["CloseTime"].as<string>();
         ret.QryFund = sourceConfig["QryFund"].as<bool>();
         ret.CancelAll = sourceConfig["CancelAll"].as<bool>();
+        std::string strCPU = sourceConfig["CPUSET"].as<string>();
+        ret.CPUSET.clear();
+        std::vector<std::string> vec;
+        Split(strCPU, ",", vec);
+        for(int i = 0; i < vec.size(); i++)
+        {
+            ret.CPUSET.push_back(atoi(vec.at(i).c_str()));
+        }
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
         ret.ErrorPath = sourceConfig["ErrorPath"].as<string>();
         ret.RiskServerName = sourceConfig["RiskServerName"].as<string>();
@@ -483,6 +500,7 @@ struct XRiskJudgeConfig
     string RiskDBPath;
     string XWatcherIP;
     int XWatcherPort;
+    std::vector<int> CPUSET;
 };
 
 static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string& out)
@@ -498,6 +516,14 @@ static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string&
         ret.RiskDBPath = sourceConfig["RiskDBPath"].as<string>();
         ret.XWatcherIP = sourceConfig["XWatcherIP"].as<string>();
         ret.XWatcherPort = sourceConfig["XWatcherPort"].as<int>();
+        std::string strCPU = sourceConfig["CPUSET"].as<string>();
+        ret.CPUSET.clear();
+        std::vector<std::string> vec;
+        Split(strCPU, ",", vec);
+        for(int i = 0; i < vec.size(); i++)
+        {
+            ret.CPUSET.push_back(atoi(vec.at(i).c_str()));
+        }
     }
     catch(YAML::Exception& e)
     {
@@ -829,11 +855,15 @@ struct XQuantConfig
     string XWatcherIP;
     int XWatcherPort;
     string StrategyName;
-    int StrategyID;
     std::vector<std::string> AccountList;
     string TickerListPath;
     string MarketServerName;
     string OrderServerName;
+    std::vector<int> CPUSET;
+    int SlicePerSec;
+    int SnapshotInterval;
+    std::vector<int> KLineIntervals;
+    std::vector<std::pair<std::string, std::string>> TradingSection;
 };
 
 static bool LoadXQuantConfig(const char *yml, XQuantConfig& ret, string& out)
@@ -847,12 +877,41 @@ static bool LoadXQuantConfig(const char *yml, XQuantConfig& ret, string& out)
         ret.XWatcherIP = sourceConfig["XWatcherIP"].as<string>();
         ret.XWatcherPort = sourceConfig["XWatcherPort"].as<int>();
         ret.StrategyName = sourceConfig["StrategyName"].as<string>();
-        ret.StrategyID = sourceConfig["StrategyID"].as<int>();
         std::string Accounts = sourceConfig["AccountList"].as<string>();
         Utils::Split(Accounts, ",", ret.AccountList);
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
         ret.MarketServerName = sourceConfig["MarketServerName"].as<string>();
         ret.OrderServerName = sourceConfig["OrderServerName"].as<string>();
+        std::string strCPU = sourceConfig["CPUSET"].as<string>();
+        ret.CPUSET.clear();
+        std::vector<std::string> vec;
+        Split(strCPU, ",", vec);
+        for(int i = 0; i < vec.size(); i++)
+        {
+            ret.CPUSET.push_back(atoi(vec.at(i).c_str()));
+        }
+
+        ret.SlicePerSec = sourceConfig["SlicePerSec"].as<int>();
+        ret.SnapshotInterval = sourceConfig["SnapshotInterval"].as<int>();
+        std::string strKLineIntervals = sourceConfig["KLineIntervals"].as<string>();
+        ret.KLineIntervals.clear();
+        vec.clear();
+        Split(strKLineIntervals, ",", vec);
+        for(int i = 0; i < vec.size(); i++)
+        {
+            ret.KLineIntervals.push_back(atoi(vec.at(i).c_str()));
+        }
+        YAML::Node con_period = sourceConfig["TradingSection"];
+        for (int j = 0; j < con_period.size(); ++j)
+        {
+            std::vector<string> time_point;
+            Split(con_period[j].as<string>(), "-", time_point);
+            std::pair<std::string, std::string> section;
+            section.first = time_point[0];
+            section.second = time_point[1];
+            ret.TradingSection.push_back(section);
+        }
+
     }
     catch(YAML::Exception& e)
     {

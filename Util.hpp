@@ -158,9 +158,8 @@ static const char *getCurrentNumberDay()
 static unsigned long getTimeStamp(const char *str)
 {
     unsigned long ret = 0;
-    char szBuffer[64] = {0};
     struct tm timeStamp;
-    strptime(szBuffer, "%Y-%m-%d %H:%M:%S", &timeStamp);
+    strptime(str, "%Y-%m-%d %H:%M:%S", &timeStamp);
     ret = mktime(&timeStamp);
     return ret;
 }
@@ -245,6 +244,7 @@ static void LeftFill(int totalWidth, char fill, std::string& src)
     temp = NULL;
 }
 
+
 static void Split(const std::string &src, const std::string &delimiter, std::vector<std::string> &value)
 {
     value.clear();
@@ -264,8 +264,10 @@ static void Split(const std::string &src, const std::string &delimiter, std::vec
         }
         if (is_equal)
         {
-            if (str.size() > 0)
+            if(str.size() > 0)
             {
+                str.erase(0, str.find_first_not_of(" "));
+                str.erase(str.find_last_not_of(" ") + 1);
                 value.push_back(str);
                 str.clear();
             }
@@ -275,6 +277,8 @@ static void Split(const std::string &src, const std::string &delimiter, std::vec
             str += src[i];
         }
     }
+    str.erase(0, str.find_first_not_of(" "));
+    str.erase(str.find_last_not_of(" ") + 1);
     value.push_back(str);
 }
 
