@@ -99,135 +99,122 @@ struct TStockMarketData
     char RecvLocalTime[32];
 };
 
-static void Check(TFutureMarketData& data)
+static bool Check(TFutureMarketData& data)
 {
-    int ErrorID = 0;
-    // rule 1
-    if (!((data.BidPrice1 < 1e10 && data.BidPrice1 > 0) || (data.AskPrice1 > 0 && data.AskPrice1 < 1e10)))
-    {
-        ErrorID = 1;
-    }
-    else
-    {
-        // rule 2
-        std::string time1;
-        if(strnlen(data.UpdateTime, sizeof(data.UpdateTime)) == 0)
-        {
-            time1 = Utils::getCurrentDay();
-            time1 = time1 + " 00:00:00.000000";
-        }
-        else
-        {
-            time1 = std::string(data.UpdateTime + 11) + ".000000";
-        }
-        std::string time2 = std::string(data.RecvLocalTime + 11) + ".000000";
-        if (abs(Utils::TimeDiffUs(time1, time2)) >= 120 * 1e6)
-        {
-            ErrorID = 2;
-        }
-    }
-
-    data.ErrorID = ErrorID;
-    if(data.LastPrice > 1e10)
+    bool ret = true;
+    if(data.LastPrice > 1e15)
     {
         data.LastPrice = 0;
+        ret = false;
     }
-    if(data.OpenPrice > 1e10)
+    if(data.OpenPrice > 1e15)
     {
         data.OpenPrice = 0;
+        ret = false;
     }
-    if(data.SettlementPrice > 1e10)
+    if(data.Turnover > 1e15)
+    {
+        data.Turnover = 0;
+        ret = false;
+    }
+    if(data.Volume == 0)
+    {
+        data.Volume = 0;
+        ret = false;
+    }
+    if(data.SettlementPrice > 1e15)
     {
         data.SettlementPrice = 0;
     }
-    if(data.PreSettlementPrice > 1e10)
+    if(data.PreSettlementPrice > 1e15)
     {
         data.PreSettlementPrice = 0;
     }
-    if(data.ClosePrice > 1e10)
+    if(data.ClosePrice > 1e15)
     {
         data.ClosePrice = 0;
     }
-    if(data.PreClosePrice > 1e10)
+    if(data.PreClosePrice > 1e15)
     {
         data.PreClosePrice = 0;
     }
-    if(data.OpenInterest > 1e10)
+    if(data.OpenInterest > 1e15)
     {
         data.OpenInterest = 0;
     }
-    if(data.PreOpenInterest > 1e10)
+    if(data.PreOpenInterest > 1e15)
     {
         data.PreOpenInterest = 0;
     }
-    if(data.CurrDelta > 1e10)
+    if(data.CurrDelta > 1e15)
     {
         data.CurrDelta = 0;
     }
-    if(data.PreDelta > 1e10)
+    if(data.PreDelta > 1e15)
     {
         data.PreDelta = 0;
     }
-    if(data.HighestPrice > 1e10)
+    if(data.HighestPrice > 1e15)
     {
         data.HighestPrice = 0;
     }
-    if(data.LowestPrice > 1e10)
+    if(data.LowestPrice > 1e15)
     {
         data.LowestPrice = 0;
     }
-    if(data.UpperLimitPrice > 1e10)
+    if(data.UpperLimitPrice > 1e15)
     {
         data.UpperLimitPrice = 0;
     }
-    if(data.LowerLimitPrice > 1e10)
+    if(data.LowerLimitPrice > 1e15)
     {
         data.LowerLimitPrice = 0;
     }
-    if(data.AveragePrice > 1e10)
+    if(data.AveragePrice > 1e15)
     {
         data.AveragePrice = 0;
     }
-    if(data.BidPrice1 > 1e10)
+    if(data.BidPrice1 > 1e15)
     {
         data.BidPrice1 = 0;
     }
-    if(data.BidPrice2 > 1e10)
+    if(data.BidPrice2 > 1e15)
     {
         data.BidPrice2 = 0;
     }
-    if(data.BidPrice3 > 1e10)
+    if(data.BidPrice3 > 1e15)
     {
         data.BidPrice3 = 0;
     }
-    if(data.BidPrice4 > 1e10)
+    if(data.BidPrice4 > 1e15)
     {
         data.BidPrice4 = 0;
     }
-    if(data.BidPrice5 > 1e10)
+    if(data.BidPrice5 > 1e15)
     {
         data.BidPrice5 = 0;
     }
-    if(data.AskPrice1 > 1e10)
+    if(data.AskPrice1 > 1e15)
     {
         data.AskPrice1 = 0;
     }
-    if(data.AskPrice2 > 1e10)
+    if(data.AskPrice2 > 1e15)
     {
         data.AskPrice2 = 0;
     }
-    if(data.AskPrice3 > 1e10)
+    if(data.AskPrice3 > 1e15)
     {
         data.AskPrice3 = 0;
     }
-    if(data.AskPrice4 > 1e10)
+    if(data.AskPrice4 > 1e15)
     {
         data.AskPrice4 = 0;
     }
-    if(data.AskPrice5 > 1e10)
+    if(data.AskPrice5 > 1e15)
     {
         data.AskPrice5 = 0;
     }
+    return ret;
 }
 
 }
