@@ -44,7 +44,7 @@ public:
             int shmid = shmget(m_QueueKey, m_QueueSize * sizeof(T) + sizeof(int) * 2, 0666 | IPC_CREAT);
             m_Buffer = static_cast<T *>(shmat(shmid, 0, 0));
             m_Head = (int *)(m_Buffer + m_QueueSize);
-            m_Tail = (int *)((m_Buffer + m_QueueSize) + sizeof(int));
+            m_Tail = m_Head + 1;
         }
     }
 

@@ -143,11 +143,11 @@ enum EOrderOffset
 
 enum ERiskStatusType
 {
-    EPREPARE_CHECKED = 1, // 等待检查
-    ECHECKED_PASS = 2, // 风控检查通过
-    ECHECKED_NOPASS = 3, // 风控检查不通过
-    ENOCHECKED = 4, // 不进行风控检查
-    ECHECK_INIT = 5, // 初始化检查
+    EPREPARE_CHECKED = 0, // 等待检查
+    ECHECKED_PASS = 1, // 风控检查通过
+    ECHECKED_NOPASS = 2, // 风控检查不通过
+    ENOCHECKED = 3, // 不进行风控检查
+    ECHECK_INIT = 4, // 初始化检查
 };
 
 enum EEngineType
@@ -221,9 +221,8 @@ enum EOrderStatusType
     ERISK_ORDER_REJECTED = 12,
     ERISK_ACTION_REJECTED = 13,
     ERISK_CHECK_INIT = 14,
-    ERISK_CHECK_SELFMATCH = 15,
-    ERISK_CHECK_CANCELLIMIT = 16,
 };
+
 
 enum EOrderSide
 {
@@ -397,13 +396,14 @@ struct TAccountPosition
 enum ECommandType
 {
     EUPDATE_RISK_LIMIT = 1,
-    EUPDATE_RISK_ACCOUNT_LOCKED = 2,
-    EUPDATE_USERPERMISSION = 3,
-    EKILL_APP = 4, 
-    ESTART_APP = 5,
-    ETRANSFER_FUND_IN = 6,
-    ETRANSFER_FUND_OUT = 7,
-    EREPAY_MARGIN_DIRECT = 8,
+    EUPDATE_RISK_POSITION_LIMIT = 2,
+    EUPDATE_RISK_ACCOUNT_LOCKED = 3,
+    EUPDATE_USERPERMISSION = 4,
+    EKILL_APP = 5, 
+    ESTART_APP = 6,
+    ETRANSFER_FUND_IN = 7,
+    ETRANSFER_FUND_OUT = 8,
+    EREPAY_MARGIN_DIRECT = 9,
 };
 
 struct TCommand
@@ -437,56 +437,111 @@ struct TEventLog
 
 enum ERiskRejectedType
 {
-    EFLOW_LIMITED = 1,
-    ESELF_MATCHED = 2,
-    EACCOUNT_LOCKED = 3,
-    EBUY_LOCKED = 4,
-    ESELL_LOCKED = 5,
-    ETICKER_ACTION_LIMITED = 6,
-    EORDER_ACTION_LIMITED = 7,
-    EINVALID_PRICE = 8,
-};
-
-enum ERiskLockedSide
-{
-    EUNLOCK = 0,
-    ELOCK_BUY = 1,
-    ELOCK_SELL = 1 << 1,
-    ELOCK_ACCOUNT = ELOCK_BUY | ELOCK_SELL,
+    EFLOW_LIMITED = 1,  // 流速限制
+    ESELF_MATCHED = 2,  // 防自成交
+    ETICKER_ACTION_LIMITED = 3, // Ticker撤单限制
+    EORDER_ACTION_LIMITED = 4,  // 订单撤单限制
+    EINVALID_PRICE = 5, // 价格无效
+    EACCOUNT_NOT_FOUND = 6,  // 账户无效
+    ETICKER_NOT_FOUND = 7,  // 合约无效
+    EVOLUME_EXCEEDED = 8,   // 订单委托数量超限
+    EREQUEST_LIMITED = 9,   // 订单申报次数限制
+    EACCOUNT_LOCKED_ALL = 20,   // 禁止账户交易
+    EACCOUNT_LOCKED_BUY = 21,   // 禁止账户买入
+    EACCOUNT_LOCKED_BUY_OPEN = 22,   // 禁止账户买入开仓
+    EACCOUNT_LOCKED_BUY_CLOSE = 23,   // 禁止账户买入平仓
+    EACCOUNT_LOCKED_BUY_CLOSE_TODAY = 24,   // 禁止账户买入平今
+    EACCOUNT_LOCKED_BUY_CLOSE_YESTODAY = 25,   // 禁止账户买入平今
+    EACCOUNT_LOCKED_SELL = 26,   // 禁止账户卖出
+    EACCOUNT_LOCKED_SELL_OPEN = 27,   // 禁止账户卖出开仓
+    EACCOUNT_LOCKED_SELL_CLOSE = 28,   // 禁止账户卖出平仓
+    EACCOUNT_LOCKED_SELL_CLOSE_TODAY = 29,   // 禁止账户卖出平今
+    EACCOUNT_LOCKED_SELL_CLOSE_YESTODAY = 30,   // 禁止账户卖出平今
+    EACCOUNT_LOCKED_OPEN = 31,   // 禁止账户开仓
+    EACCOUNT_LOCKED_CLOSE = 32,   // 禁止账户开仓
+    ETICKER_LOCKED_ALL = 40,   // 禁止合约交易
+    ETICKER_LOCKED_BUY = 41,   // 禁止合约买入
+    ETICKER_LOCKED_BUY_OPEN = 42,   // 禁止合约买入开仓
+    ETICKER_LOCKED_BUY_CLOSE = 43,   // 禁止合约买入平仓
+    ETICKER_LOCKED_BUY_CLOSE_TODAY = 44,   // 禁止合约买入平今
+    ETICKER_LOCKED_BUY_CLOSE_YESTODAY = 45,   // 禁止合约买入平今
+    ETICKER_LOCKED_SELL = 46,   // 禁止合约卖出
+    ETICKER_LOCKED_SELL_OPEN = 47,   // 禁止合约卖出开仓
+    ETICKER_LOCKED_SELL_CLOSE = 48,   // 禁止合约卖出平仓
+    ETICKER_LOCKED_SELL_CLOSE_TODAY = 49,   // 禁止合约卖出平今
+    ETICKER_LOCKED_SELL_CLOSE_YESTODAY = 50,   // 禁止合约卖出平今
+    ETICKER_LOCKED_OPEN = 51,   // 禁止合约开仓
+    ETICKER_LOCKED_CLOSE = 52,   // 禁止合约平仓
+    ETICKER_LONG_LIMIT = 60,    // 账户多头持仓限制
+    ETICKER_SHORT_LIMIT = 61,    // 账户空头持仓限制
+    ETICKER_NET_LONG_LIMIT = 62,    // 账户净多头持仓限制
+    ETICKER_NET_SHORT_LIMIT = 63,    // 账户净空头持仓限制
+    ETICKER_LONG_INSUFFICIENT = 64,   // 账户多头持仓不足
+    ETICKER_SHORT_INSUFFICIENT = 65,   // 账户空头持仓不足
+    ESTRATEGY_LONG_LIMIT = 70,    // 策略多头持仓限制
+    ESTRATEGY_SHORT_LIMIT = 71,    // 策略空头持仓限制
+    ESTRATEGY_NET_LONG_LIMIT = 72,    // 策略净多头持仓限制
+    ESTRATEGY_NET_SHORT_LIMIT = 73,    // 策略净空头持仓限制
 };
 
 enum ERiskReportType
 {
-    ERISK_LIMIT = ECommandType::EUPDATE_RISK_LIMIT,
-    ERISK_ACCOUNT_LOCKED = ECommandType::EUPDATE_RISK_ACCOUNT_LOCKED,
-    ERISK_TICKER_CANCELLED,
-    ERISK_EVENTLOG,
+    ERISK_LIMIT = 1,
+    ERISK_POSITION_LIMIT = 2,
+    ERISK_ACCOUNT_LOCKED = 3,
+    ERISK_EVENTLOG = 4,
+};
+
+enum EAccountLockSide
+{
+    EUNLOCK = 0,
+    ELOCK_ACCOUNT = 1,
+    ELOCK_OPEN = 2,
+    ELOCK_CLOSE = 3,
+    ELOCK_BUY = 11,
+    ELOCK_BUY_OPEN = 12,
+    ELOCK_BUY_CLOSE = 13,
+    ELOCK_BUY_CLOSE_TODAY = 14,
+    ELOCK_BUY_CLOSE_YESTODAY = 15,
+    ELOCK_SELL = 21,
+    ELOCK_SELL_OPEN = 22,
+    ELOCK_SELL_CLOSE = 23,
+    ELOCK_SELL_CLOSE_TODAY = 24,
+    ELOCK_SELL_CLOSE_YESTODAY = 25,
 };
 
 struct TRiskReport
 {
     // common
     uint8_t ReportType;
+    uint8_t BusinessType;
     char Colo[16];
     char Broker[16];
     char Product[16];
     char Account[16];
     char Ticker[20];
     char ExchangeID[16];
-    uint8_t BusinessType;
-    //  RiskLimitTable
-    int FlowLimit;
-    int TickerCancelLimit;
-    int OrderCancelLimit;
-    // LockedAccountTable
-    int LockedSide;
-    // CancelledCountTable
-    int CancelledCount;
-    int UpperLimit;
-    // common
-    char Event[400];
     char RiskID[16];
     char Trader[32];
+    //  RiskLimitTable
+    int FlowLimit;
+    int CancelCount;
+    int CancelLimit;
+    int OrderCount;
+    int OrderLimit;
+    int OrderCancelLimit;
+    // PositionLimitTable
+    int EngineID;
+    int LongVolume;
+    int ShortVolume;
+    int LongLimit;
+    int ShortLimit;
+    int ExposureLowerLimit;
+    int ExposureUpperLimit;
+    // AccountLockedTable
+    int LockSide;
+    // common
+    char Event[400];
     char UpdateTime[32];
 };
 

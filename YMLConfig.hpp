@@ -222,6 +222,7 @@ struct TickerProperty
     string Ticker;
     string ExchangeID;
     double PriceTick;
+    int MaxVolume;
 };
 
 static bool LoadTickerList(const char *yml, std::vector<TickerProperty>& ret, string& out)
@@ -241,6 +242,7 @@ static bool LoadTickerList(const char *yml, std::vector<TickerProperty>& ret, st
             item.Ticker = property["Ticker"].as<string>();
             item.ExchangeID = property["ExchangeID"].as<string>();
             item.PriceTick = property["PriceTick"].as<double>();
+            item.MaxVolume = property["MaxVolume"].as<int>();
             ret.push_back(item);
         }
         
@@ -373,7 +375,7 @@ static bool LoadXTraderConfig(const char *yml, XTraderConfig& ret, string& out)
         ret.BrokerID = sourceConfig["BrokerID"].as<string>();
         ret.BusinessType = sourceConfig["BusinessType"].as<int>();
         ret.CloseToday = sourceConfig["CloseToday"].as<bool>();
-         ret.Account = sourceConfig["Account"].as<string>();
+        ret.Account = sourceConfig["Account"].as<string>();
         ret.Password = sourceConfig["Password"].as<string>();
         ret.AppID = sourceConfig["AppID"].as<string>();
         ret.AuthCode = sourceConfig["AuthCode"].as<string>();
@@ -450,6 +452,7 @@ static bool LoadREMConfig(const char *yml, REMConfig& ret, string& out)
 struct CTPConfig
 {
     string FrontAddr;
+    bool ProductionMode;
 };
 
 static bool LoadCTPConfig(const char *yml, CTPConfig& ret, string& out)
@@ -461,6 +464,7 @@ static bool LoadCTPConfig(const char *yml, CTPConfig& ret, string& out)
         YAML::Node config = YAML::LoadFile(yml);
         YAML::Node sourceConfig = config["CTPConfig"];
         ret.FrontAddr = sourceConfig["FrontAddr"].as<string>();
+        ret.ProductionMode = sourceConfig["ProductionMode"].as<bool>();
     }
     catch(YAML::Exception& e)
     {
@@ -501,6 +505,7 @@ struct XRiskJudgeConfig
     string XWatcherIP;
     int XWatcherPort;
     std::vector<int> CPUSET;
+    string TickerListPath;
 };
 
 static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string& out)
@@ -524,6 +529,7 @@ static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string&
         {
             ret.CPUSET.push_back(atoi(vec.at(i).c_str()));
         }
+        ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
     }
     catch(YAML::Exception& e)
     {

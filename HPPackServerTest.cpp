@@ -32,4 +32,4 @@ int main()
     return 0;
 }
 
-// g++ -O2 --std=c++11 HPPackServer.cpp HPPackServerTest.cpp Logger.cpp -o server -pthread -lhpsocket4c -lspdlog  -I/home/xtrader/QuantFabric/XAPI/HP-Socket/5.8.2/include/ -I/home/xtrader/QuantFabric/XAPI/SPDLog/1.8.5/include/ -I/home/xtrader/QuantFabric/XAPI/ConcurrentQueue/1.0.3/ -L/home/xtrader/QuantFabric/XAPI/HP-Socket/5.8.2/lib/ -L/home/xtrader/QuantFabric/XAPI/SPDLog/1.8.5/lib/ 
+// g++ -O2 --std=c++17 HPPackServer.cpp HPPackServerTest.cpp Logger.cpp -o server -pthread -lhpsocket4c -lspdlog  -I/home/xtrader/QuantFabric/XAPI/HP-Socket/5.8.2/include/ -I/home/xtrader/QuantFabric/XAPI/SPDLog/1.8.5/include/ -I/home/xtrader/QuantFabric/XAPI/ConcurrentQueue/1.0.3/ -L/home/xtrader/QuantFabric/XAPI/HP-Socket/5.8.2/lib/ -L/home/xtrader/QuantFabric/XAPI/SPDLog/1.8.5/lib/ -I/home/xtrader/QuantFabric/XAPI/parallel_hashmap/
