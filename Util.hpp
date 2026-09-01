@@ -160,6 +160,8 @@ static unsigned long getTimeStamp(const char *str)
     unsigned long ret = 0;
     struct tm timeStamp;
     strptime(str, "%Y-%m-%d %H:%M:%S", &timeStamp);
+    // Explicitly set tm_isdst to 0 to avoid DST adjustment
+    timeStamp.tm_isdst = 0;
     ret = mktime(&timeStamp);
     return ret;
 }
