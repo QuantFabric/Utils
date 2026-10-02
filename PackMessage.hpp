@@ -218,9 +218,9 @@ enum EOrderStatusType
     EBROKER_ERROR = 9,
     EEXCHANGE_ERROR = 10,
     EACTION_ERROR = 11,
-    ERISK_ORDER_REJECTED = 12,
-    ERISK_ACTION_REJECTED = 13,
-    ERISK_CHECK_INIT = 14,
+    ERISK_ORDER_REJECTED = 12, // 风控拒绝报单申报
+    ERISK_ACTION_REJECTED = 13, // 风控拒绝撤单申报
+    ERISK_CHECK_INIT = 14, // 风控初始化
 };
 
 
