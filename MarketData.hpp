@@ -121,6 +121,16 @@ static bool Check(TFutureMarketData& data)
         data.OpenPrice = 0;
         ret = false;
     }
+    if(data.Turnover > 1e15)
+    {
+        data.Turnover = 0;
+        ret = false;
+    }
+    if(data.Volume == 0)
+    {
+        data.Volume = 0;
+        ret = false;
+    }
     if(data.SettlementPrice > 1e15)
     {
         data.SettlementPrice = 0;
