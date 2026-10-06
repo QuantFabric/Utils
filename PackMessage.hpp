@@ -319,6 +319,7 @@ struct TFastOrder
     char ErrorMsg[128];
     char SOrderLocalID[32];
     char SOrderSysID[32];
+    char RiskID[16];
 };
 
 struct TAccountFund
@@ -396,14 +397,16 @@ struct TAccountPosition
 enum ECommandType
 {
     EUPDATE_RISK_LIMIT = 1,
-    EUPDATE_RISK_POSITION_LIMIT = 2,
-    EUPDATE_RISK_ACCOUNT_LOCKED = 3,
-    EUPDATE_USERPERMISSION = 4,
-    EKILL_APP = 5, 
-    ESTART_APP = 6,
-    ETRANSFER_FUND_IN = 7,
-    ETRANSFER_FUND_OUT = 8,
-    EREPAY_MARGIN_DIRECT = 9,
+    EDELETE_RISK_LIMIT = 2,
+    EUPDATE_RISK_POSITION_LIMIT = 3,
+    EDELETE_RISK_POSITION_LIMIT = 4,
+    EUPDATE_RISK_ACCOUNT_LOCKED = 5,
+    EUPDATE_USERPERMISSION = 11,
+    EKILL_APP = 21, 
+    ESTART_APP = 22,
+    ETRANSFER_FUND_IN = 31,
+    ETRANSFER_FUND_OUT = 32,
+    EREPAY_MARGIN_DIRECT = 33,
 };
 
 struct TCommand

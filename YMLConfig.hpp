@@ -22,6 +22,9 @@ struct CTPMarketSourceConfig
     string Account;
     string Password;
     string TickerListPath;
+    bool IsUsingUdp;
+    bool IsMulticast;
+    bool IsProductionMode;
 };
 
 static bool LoadCTPMarkeSourceConfig(const char *yml, CTPMarketSourceConfig& ret, string& out)
@@ -37,6 +40,9 @@ static bool LoadCTPMarkeSourceConfig(const char *yml, CTPMarketSourceConfig& ret
         ret.Account = ctpSourceConfig["Account"].as<string>();
         ret.Password = ctpSourceConfig["Password"].as<string>();
         ret.TickerListPath = ctpSourceConfig["TickerListPath"].as<string>();
+        ret.IsUsingUdp = ctpSourceConfig["IsUsingUdp"].as<bool>();
+        ret.IsMulticast = ctpSourceConfig["IsMulticast"].as<bool>();
+        ret.IsProductionMode = ctpSourceConfig["IsProductionMode"].as<bool>();
     }
     catch(YAML::Exception& e)
     {
@@ -452,7 +458,7 @@ static bool LoadREMConfig(const char *yml, REMConfig& ret, string& out)
 struct CTPConfig
 {
     string FrontAddr;
-    bool ProductionMode;
+    bool IsProductionMode;
 };
 
 static bool LoadCTPConfig(const char *yml, CTPConfig& ret, string& out)
@@ -464,7 +470,7 @@ static bool LoadCTPConfig(const char *yml, CTPConfig& ret, string& out)
         YAML::Node config = YAML::LoadFile(yml);
         YAML::Node sourceConfig = config["CTPConfig"];
         ret.FrontAddr = sourceConfig["FrontAddr"].as<string>();
-        ret.ProductionMode = sourceConfig["ProductionMode"].as<bool>();
+        ret.IsProductionMode = sourceConfig["IsProductionMode"].as<bool>();
     }
     catch(YAML::Exception& e)
     {
