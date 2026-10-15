@@ -512,6 +512,7 @@ struct XRiskJudgeConfig
     int XWatcherPort;
     std::vector<int> CPUSET;
     string TickerListPath;
+    bool StrategyPositionCheck;
 };
 
 static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string& out)
@@ -536,6 +537,7 @@ static bool LoadXRiskJudgeConfig(const char *yml, XRiskJudgeConfig& ret, string&
             ret.CPUSET.push_back(atoi(vec.at(i).c_str()));
         }
         ret.TickerListPath = sourceConfig["TickerListPath"].as<string>();
+        ret.StrategyPositionCheck = sourceConfig["StrategyPositionCheck"].as<bool>();
     }
     catch(YAML::Exception& e)
     {
