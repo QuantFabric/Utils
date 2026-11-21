@@ -626,7 +626,8 @@ static bool LoadXWatcherConfig(const char *yml, XWatcherConfig& ret, string& out
 }
 
 
-static bool LoadCTPError(const char *yml, unordered_map<int, string>& ret, string& out)
+template <typename ErrorMap>
+static bool LoadCTPError(const char *yml, ErrorMap& ret, string& out)
 {
     bool ok = true;
     try
@@ -651,7 +652,8 @@ static bool LoadCTPError(const char *yml, unordered_map<int, string>& ret, strin
     return ok;
 }
 
-static bool LoadREMError(const char *yml, unordered_map<int, string>& ret, string& out)
+template <typename ErrorMap>
+static bool LoadREMError(const char *yml, ErrorMap& ret, string& out)
 {
     bool ok = true;
     try
@@ -676,7 +678,8 @@ static bool LoadREMError(const char *yml, unordered_map<int, string>& ret, strin
     return ok;
 }
 
-static bool LoadYDError(const char *yml, unordered_map<int, string>& ret, string& out)
+template <typename ErrorMap>
+static bool LoadYDError(const char *yml, ErrorMap& ret, string& out)
 {
     bool ok = true;
     try
@@ -701,7 +704,8 @@ static bool LoadYDError(const char *yml, unordered_map<int, string>& ret, string
     return ok;
 }
 
-static bool LoadOESError(const char *yml, unordered_map<int, string>& ret, string& out)
+template <typename ErrorMap>
+static bool LoadOESError(const char *yml, ErrorMap& ret, string& out)
 {
     bool ok = true;
     try
