@@ -158,6 +158,7 @@ struct MarketCenterConfig
     string ExchangeID;
     unsigned int  BusinessType;
     bool ToMonitor;
+    bool SaveData;
     bool Future;
     unsigned int TotalTick;
     string MarketServer;
@@ -183,6 +184,7 @@ static bool LoadMarketCenterConfig(const char *yml, MarketCenterConfig& ret, str
         ret.ExchangeID = sourceConfig["ExchangeID"].as<string>();
         ret.BusinessType = sourceConfig["BusinessType"].as<unsigned int>();
         ret.ToMonitor = sourceConfig["ToMonitor"].as<bool>();
+        ret.SaveData = sourceConfig["SaveData"].as<bool>();
         ret.Future = sourceConfig["Future"].as<bool>();
         ret.TotalTick = sourceConfig["TotalTick"].as<unsigned int>();
         ret.MarketServer = sourceConfig["MarketServer"].as<string>();
