@@ -547,6 +547,7 @@ struct TRiskReport
     // common
     char Event[400];
     char UpdateTime[32];
+    int ErrorID;
 };
 
 struct TLoadAverage
